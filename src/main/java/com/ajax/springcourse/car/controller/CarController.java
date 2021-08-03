@@ -11,7 +11,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.util.List;
 
 @RestController
 @RequestMapping(
@@ -31,7 +30,6 @@ public class CarController {
     @GetMapping("")
     public ResponseEntity<Iterable<Car>> findAll(){
         Iterable<Car> cars = service.findAll();
-        log.info(cars.toString());
         return new ResponseEntity<>(cars, HttpStatus.OK);
     }
 

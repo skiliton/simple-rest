@@ -1,12 +1,15 @@
 package com.ajax.springcourse.car.service;
 
 import com.ajax.springcourse.car.model.Car;
-import com.ajax.springcourse.car.model.CarCreateDto;
-import com.ajax.springcourse.car.model.CarUpdateDto;
+import com.ajax.springcourse.car.model.dto.CarDto;
+import com.ajax.springcourse.car.model.dto.CarUpdateDto;
+
+import java.util.List;
 
 public interface CarService {
-    public Iterable<Car> findAll();
-    public Car findByModel(String model);
-    public Car create(CarCreateDto carDto);
-    public void update(CarUpdateDto carDto, long id);
+    public List<CarDto> findAll();
+    public CarDto findByModel(String model);
+    public CarDto findById(long id);
+    public CarDto create(CarDto carDto);
+    public CarDto update(CarUpdateDto carDto, long id);
 }

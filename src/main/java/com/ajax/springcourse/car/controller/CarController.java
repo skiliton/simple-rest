@@ -1,8 +1,8 @@
 package com.ajax.springcourse.car.controller;
 
 import com.ajax.springcourse.car.model.Car;
-import com.ajax.springcourse.car.model.CarCreateDto;
-import com.ajax.springcourse.car.model.CarUpdateDto;
+import com.ajax.springcourse.car.model.dto.CarDto;
+import com.ajax.springcourse.car.model.dto.CarUpdateDto;
 import com.ajax.springcourse.car.service.CarService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.List;
 
 @RestController
 @RequestMapping(
@@ -27,26 +28,28 @@ public class CarController {
         this.service = service;
     }
 
-    @GetMapping("")
-    public ResponseEntity<Iterable<Car>> findAll(){
-        Iterable<Car> cars = service.findAll();
-        return new ResponseEntity<>(cars, HttpStatus.OK);
+    @GetMapping()
+    public List<CarDto> findAll(){
+        return service.findAll();
     }
 
     @GetMapping("/search/find-by-model")
-    public ResponseEntity<Car> findByModel(@RequestParam String model){
-        Car car = service.findByModel(model);
-        return new ResponseEntity<>(car,HttpStatus.OK);
+    public CarDto findByModel(@RequestParam String model){
+        return service.findByModel(model);
     }
 
-    @PostMapping("")
-    public ResponseEntity<?> create(@Valid @RequestBody CarCreateDto carDto){
-        return new ResponseEntity<>(service.create(carDto),HttpStatus.CREATED);
+    @PostMapping()
+    public CarDto create(@Valid @RequestBody CarDto carDto){
+        return service.create(carDto);
+    }
+
+    @GetMapping("/{id}")
+    public CarDto findById(@PathVariable long id){
+        return service.findById(id);
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<?> update(@Valid @RequestBody CarUpdateDto carDto, @PathVariable long id){
-        service.update(carDto,id);
-        return ResponseEntity.ok().build();
+    public CarDto update(@Valid @RequestBody CarUpdateDto carUpdateDto, @PathVariable long id){
+        return service.update(carUpdateDto,id);
     }
 }

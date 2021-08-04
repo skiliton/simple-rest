@@ -1,11 +1,14 @@
 package com.ajax.springcourse.car.service;
 
 import com.ajax.springcourse.car.model.Car;
-import com.ajax.springcourse.car.model.CarCreateDto;
-import com.ajax.springcourse.car.model.CarUpdateDto;
+import com.ajax.springcourse.car.model.dto.CarDto;
+import com.ajax.springcourse.car.model.dto.CarUpdateDto;
 import com.ajax.springcourse.car.repository.CarRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class CarServiceImpl implements CarService{
@@ -18,25 +21,35 @@ public class CarServiceImpl implements CarService{
     }
 
     @Override
-    public Iterable<Car> findAll() {
-        return repository.findAll();
+    public List<CarDto> findAll() {
+        return repository
+            .findAll()
+            .stream()
+            .map(CarDto::new)
+            .collect(Collectors.toList())
+        ;
     }
 
     @Override
-    public Car findByModel(String model) {
-        return repository.findByModel(model);
+    public CarDto findByModel(String model) {
+        return new CarDto(repository.findByModel(model));
     }
 
     @Override
-    public Car create(CarCreateDto carDto) {
+    public CarDto findById(long id) {
+        return new CarDto(repository.findById(id).orElseThrow());
+    }
+
+    @Override
+    public CarDto create(CarDto carDto) {
         Car car = carDto.mapToCar();
-        return repository.save(car);
+        return new CarDto(repository.save(car));
     }
 
     @Override
-    public void update(CarUpdateDto carDto, long id){
+    public CarDto update(CarUpdateDto carDto, long id){
         Car car = repository.findById(id).orElseThrow();
         carDto.projectOnto(car);
-        repository.save(car);
+        return new CarDto(repository.save(car));
     }
 }

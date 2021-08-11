@@ -2,14 +2,14 @@ package com.ajax.springcourse.car.model;
 
 import lombok.Getter;
 import lombok.Setter;
-
-//import java.util.UUID;
+import org.springframework.data.annotation.Version;
 
 @Setter
 @Getter
 public class Car {
     private String id;
-    //private UUID version;
+    @Version
+    private long version;
     private String brand;
     private String model;
     private int seats;

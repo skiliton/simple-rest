@@ -1,13 +1,12 @@
 package com.ajax.springcourse.car.controller;
 
 import com.ajax.springcourse.car.model.Car;
-import com.ajax.springcourse.car.model.dto.CarDto;
+import com.ajax.springcourse.car.model.dto.CarCreateDto;
+import com.ajax.springcourse.car.model.dto.CarReadDto;
 import com.ajax.springcourse.car.model.dto.CarUpdateDto;
 import com.ajax.springcourse.car.service.CarService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -29,27 +28,27 @@ public class CarController {
     }
 
     @GetMapping()
-    public List<CarDto> findAll(){
+    public List<CarReadDto> findAll(){
         return service.findAll();
     }
 
     @GetMapping("/search/find-by-model")
-    public CarDto findByModel(@RequestParam String model){
+    public CarReadDto findByModel(@RequestParam String model){
         return service.findByModel(model);
     }
 
     @PostMapping()
-    public Car create(@Valid @RequestBody CarDto carDto){
-        return service.create(carDto);
+    public CarReadDto create(@Valid @RequestBody CarCreateDto carCreateDto){
+        return service.create(carCreateDto);
     }
 
     @GetMapping("/{id}")
-    public CarDto findById(@PathVariable String id){
+    public CarReadDto findById(@PathVariable String id){
         return service.findById(id);
     }
 
     @PatchMapping()
-    public CarDto update(@Valid @RequestBody CarUpdateDto carUpdateDto){
+    public CarReadDto update(@Valid @RequestBody CarUpdateDto carUpdateDto){
         return service.update(carUpdateDto);
     }
 }

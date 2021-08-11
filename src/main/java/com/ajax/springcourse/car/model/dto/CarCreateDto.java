@@ -2,14 +2,17 @@ package com.ajax.springcourse.car.model.dto;
 
 import com.ajax.springcourse.car.model.Car;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
-public class CarDto {
+public class CarCreateDto {
 
     @NotNull
     private String brand;
@@ -21,7 +24,7 @@ public class CarDto {
     @NotNull
     private String description;
 
-    public CarDto(Car car){
+    public CarCreateDto(Car car){
         brand = car.getBrand();
         model = car.getModel();
         seats = car.getSeats();

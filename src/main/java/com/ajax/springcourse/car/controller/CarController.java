@@ -39,17 +39,17 @@ public class CarController {
     }
 
     @PostMapping()
-    public CarDto create(@Valid @RequestBody CarDto carDto){
+    public Car create(@Valid @RequestBody CarDto carDto){
         return service.create(carDto);
     }
 
     @GetMapping("/{id}")
-    public CarDto findById(@PathVariable long id){
+    public CarDto findById(@PathVariable String id){
         return service.findById(id);
     }
 
-    @PatchMapping("/{id}")
-    public CarDto update(@Valid @RequestBody CarUpdateDto carUpdateDto, @PathVariable long id){
-        return service.update(carUpdateDto,id);
+    @PatchMapping()
+    public CarDto update(@Valid @RequestBody CarUpdateDto carUpdateDto){
+        return service.update(carUpdateDto);
     }
 }

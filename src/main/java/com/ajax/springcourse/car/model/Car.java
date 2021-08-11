@@ -1,21 +1,19 @@
 package com.ajax.springcourse.car.model;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-import javax.persistence.*;
+//import java.util.UUID;
 
-@Entity
-@Table(name = "cars")
-@Data
+@Setter
+@Getter
 public class Car {
-    @Id
-    @GeneratedValue(strategy=GenerationType.IDENTITY)
-    private long id;
+    private String id;
+    //private UUID version;
     private String brand;
     private String model;
     private int seats;
     private String description;
-    protected Car() {}
 
     public Car(String brand, String model, int seats, String description) {
         this.brand = brand;

@@ -1,11 +1,15 @@
 package com.ajax.springcourse.car.repository;
 
 import com.ajax.springcourse.car.model.Car;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.repository.CrudRepository;
-
 import java.util.List;
+import java.util.Optional;
 
-public interface CarRepository extends JpaRepository<Car,Long> {
-    public Car findByModel(String model);
+public interface CarRepository{
+    Optional<Car> findByModel(String model);
+
+    Optional<Car> findById(String id);
+
+    Car save(Car car);
+
+    List<Car> findAll();
 }

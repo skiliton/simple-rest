@@ -32,24 +32,23 @@ public class CarServiceImpl implements CarService{
 
     @Override
     public CarDto findByModel(String model) {
-        return new CarDto(repository.findByModel(model));
+        return new CarDto(repository.findByModel(model).orElseThrow());
     }
 
     @Override
-    public CarDto findById(long id) {
+    public CarDto findById(String id) {
         return new CarDto(repository.findById(id).orElseThrow());
     }
 
     @Override
-    public CarDto create(CarDto carDto) {
+    public Car create(CarDto carDto) {
         Car car = carDto.mapToCar();
-        return new CarDto(repository.save(car));
+        return repository.save(car);
     }
 
     @Override
-    public CarDto update(CarUpdateDto carDto, long id){
-        Car car = repository.findById(id).orElseThrow();
-        carDto.projectOnto(car);
-        return new CarDto(repository.save(car));
+    public CarDto update(CarUpdateDto carDto){
+        Car car = repository.findById(carDto.getId()).orElseThrow();
+        return new CarDto(repository.save(carDto.projectOnto(car)));
     }
 }

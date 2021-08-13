@@ -3,10 +3,14 @@ package com.ajax.springcourse.car.model;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.Version;
+import org.springframework.data.redis.core.RedisHash;
+
+import java.io.Serializable;
 
 @Setter
 @Getter
-public class Car {
+@RedisHash("car")
+public class Car implements Serializable{
     private String id;
     @Version
     private long version;

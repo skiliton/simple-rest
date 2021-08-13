@@ -2,6 +2,7 @@ package com.ajax.springcourse.car.repository;
 
 import com.ajax.springcourse.car.model.Car;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
@@ -13,6 +14,7 @@ import static org.springframework.data.mongodb.core.query.Criteria.where;
 import static org.springframework.data.mongodb.core.query.Query.query;
 
 @Repository
+@Profile("mongo")
 public class MongoDbCarRepository implements CarRepository{
 
     public static final String COLLECTION_NAME = "cars";

@@ -13,4 +13,6 @@ public interface CarRepository {
     Car save(Car car);
 
     List<Car> findAll();
+
+    void deleteAll();
 }

@@ -14,7 +14,7 @@ import static org.springframework.data.mongodb.core.query.Criteria.where;
 import static org.springframework.data.mongodb.core.query.Query.query;
 
 @Repository
-@Profile("mongo")
+@Profile({"mongo", "migration"})
 public class MongoDbCarRepository implements CarRepository {
 
     public static final String COLLECTION_NAME = "cars";
@@ -44,5 +44,10 @@ public class MongoDbCarRepository implements CarRepository {
     @Override
     public List<Car> findAll() {
         return mongoTemplate.findAll(Car.class, COLLECTION_NAME);
+    }
+
+    @Override
+    public void deleteAll() {
+        mongoTemplate.dropCollection(COLLECTION_NAME);
     }
 }

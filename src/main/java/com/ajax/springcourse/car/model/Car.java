@@ -1,20 +1,22 @@
 package com.ajax.springcourse.car.model;
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.annotation.Version;
-import org.springframework.data.redis.core.RedisHash;
 
 import java.io.Serializable;
 
 @Setter
 @Getter
-@RedisHash("car")
 @NoArgsConstructor
+@EqualsAndHashCode
 public class Car implements Serializable {
+    @EqualsAndHashCode.Exclude
     private String id;
     @Version
+    @EqualsAndHashCode.Exclude
     private long version;
     private String brand;
     private String model;

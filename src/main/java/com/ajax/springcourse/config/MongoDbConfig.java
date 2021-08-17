@@ -11,7 +11,7 @@ import org.springframework.data.mongodb.core.SimpleMongoClientDatabaseFactory;
 
 @Configuration
 @EnableMongoAuditing
-@Profile("mongo")
+@Profile({"mongo", "migration"})
 public class MongoDbConfig {
 
     @Value("${spring.data.mongodb.uri}")

@@ -4,8 +4,8 @@ import com.ajax.springcourse.car.model.dto.CarCreateDto;
 import com.ajax.springcourse.car.model.dto.CarReadDto;
 import com.ajax.springcourse.car.model.dto.CarUpdateDto;
 import com.ajax.springcourse.car.service.CarService;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -16,7 +16,7 @@ import java.util.List;
         path = "/api/car",
         produces = "application/json"
 )
-@Slf4j
+@Profile({"redis", "mongo"})
 public class CarController {
 
     private final CarService service;

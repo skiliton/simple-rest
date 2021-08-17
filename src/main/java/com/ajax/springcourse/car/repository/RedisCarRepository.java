@@ -2,6 +2,7 @@ package com.ajax.springcourse.car.repository;
 
 import com.ajax.springcourse.car.model.Car;
 import org.springframework.context.annotation.Profile;
+import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.SetOperations;
@@ -13,7 +14,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Repository
-@Profile("redis")
+@Profile({"redis", "migration"})
 public class RedisCarRepository implements CarRepository {
 
     public static final String CAR_HASH_PREFIX = "cars";
@@ -27,9 +28,11 @@ public class RedisCarRepository implements CarRepository {
     private HashOperations<String, String, String> hashOperations;
     private SetOperations<String, String> setOperations;
     private ValueOperations<String, String> keyOperations;
+    private final RedisConnection connection;
 
-    public RedisCarRepository(RedisTemplate<String, String> redisTemplate) {
+    public RedisCarRepository(RedisTemplate<String, String> redisTemplate, RedisConnection connection) {
         this.redisTemplate = redisTemplate;
+        this.connection = connection;
     }
 
     @PostConstruct
@@ -49,11 +52,10 @@ public class RedisCarRepository implements CarRepository {
     }
 
 
-
     @Override
     public Optional<Car> findById(String id) {
-        Map<String,String> entries = hashOperations.entries(getCarHashKey(id));
-        if(entries.isEmpty()){
+        Map<String, String> entries = hashOperations.entries(getCarHashKey(id));
+        if (entries.isEmpty()) {
             return Optional.empty();
         }
         return Optional.of(entriesToCar(entries));
@@ -71,7 +73,7 @@ public class RedisCarRepository implements CarRepository {
             }
         }
         createModelIndexIfNotExists(car);
-        hashOperations.putAll(getCarHashKey(car.getId()),carToEntries(car));
+        hashOperations.putAll(getCarHashKey(car.getId()), carToEntries(car));
         return car;
     }
 
@@ -84,6 +86,11 @@ public class RedisCarRepository implements CarRepository {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public void deleteAll() {
+        connection.flushDb();
+    }
+
     private Set<String> getHashesFromModel(String model) {
         Set<String> indexes = setOperations.members(getModelIndexKey(model));
         if (indexes != null) {
@@ -92,8 +99,8 @@ public class RedisCarRepository implements CarRepository {
         return Collections.emptySet();
     }
 
-    private Set<String> getAllHashKeys(){
-        Set<String> keys =  keyOperations.getOperations().keys("cars:*");
+    private Set<String> getAllHashKeys() {
+        Set<String> keys = keyOperations.getOperations().keys("cars:*");
         if (keys != null) {
             return keys;
         }
@@ -118,23 +125,23 @@ public class RedisCarRepository implements CarRepository {
         setOperations.remove(modelIndex, getCarHashKey(car.getId()));
     }
 
-    private Car entriesToCar(Map<String,String> entries){
+    private Car entriesToCar(Map<String, String> entries) {
         Car car = new Car();
-        car.setId(entries.getOrDefault(ID,""));
-        car.setBrand(entries.getOrDefault(BRAND,""));
-        car.setModel(entries.getOrDefault(MODEL,""));
-        car.setSeats(Integer.parseInt(entries.getOrDefault(SEATS,"0")));
-        car.setDescription(entries.getOrDefault(DESCRIPTION,""));
+        car.setId(entries.getOrDefault(ID, ""));
+        car.setBrand(entries.getOrDefault(BRAND, ""));
+        car.setModel(entries.getOrDefault(MODEL, ""));
+        car.setSeats(Integer.parseInt(entries.getOrDefault(SEATS, "0")));
+        car.setDescription(entries.getOrDefault(DESCRIPTION, ""));
         return car;
     }
 
-    private Map<String,String> carToEntries(Car car){
-        Map<String,String> entries = new HashMap<>();
-        entries.put(ID,car.getId());
-        entries.put(BRAND,car.getBrand());
-        entries.put(MODEL,car.getModel());
-        entries.put(SEATS,String.valueOf(car.getSeats()));
-        entries.put(DESCRIPTION,car.getDescription());
+    private Map<String, String> carToEntries(Car car) {
+        Map<String, String> entries = new HashMap<>();
+        entries.put(ID, car.getId());
+        entries.put(BRAND, car.getBrand());
+        entries.put(MODEL, car.getModel());
+        entries.put(SEATS, String.valueOf(car.getSeats()));
+        entries.put(DESCRIPTION, car.getDescription());
         return entries;
     }
 

@@ -6,12 +6,14 @@ import com.ajax.springcourse.car.model.dto.CarReadDto;
 import com.ajax.springcourse.car.model.dto.CarUpdateDto;
 import com.ajax.springcourse.car.repository.CarRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@Profile({"redis", "mongo"})
 public class CarServiceImpl implements CarService {
 
     private final CarRepository repository;

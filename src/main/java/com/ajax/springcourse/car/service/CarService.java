@@ -9,7 +9,7 @@ import java.util.List;
 public interface CarService {
     List<CarReadDto> findAll();
 
-    CarReadDto findByModel(String model);
+    List<CarReadDto> findByModel(String model);
 
     CarReadDto findById(String id);
 

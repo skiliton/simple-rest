@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface CarRepository {
-    Optional<Car> findByModel(String model);
+    List<Car> findByModel(String model);
 
     Optional<Car> findById(String id);
 

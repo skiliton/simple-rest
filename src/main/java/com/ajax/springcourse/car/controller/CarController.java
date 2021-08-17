@@ -32,7 +32,7 @@ public class CarController {
     }
 
     @GetMapping("/search/find-by-model")
-    public CarReadDto findByModel(@RequestParam String model) {
+    public List<CarReadDto> findByModel(@RequestParam String model) {
         return service.findByModel(model);
     }
 

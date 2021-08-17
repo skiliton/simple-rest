@@ -26,9 +26,9 @@ public class MongoDbCarRepository implements CarRepository {
     }
 
     @Override
-    public Optional<Car> findByModel(String model) {
+    public List<Car> findByModel(String model) {
         Query query = query(where("model").is(model));
-        return Optional.ofNullable(mongoTemplate.findOne(query, Car.class, COLLECTION_NAME));
+        return mongoTemplate.find(query, Car.class, COLLECTION_NAME);
     }
 
     @Override

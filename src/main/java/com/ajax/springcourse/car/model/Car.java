@@ -1,6 +1,7 @@
 package com.ajax.springcourse.car.model;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.annotation.Version;
 import org.springframework.data.redis.core.RedisHash;
@@ -10,6 +11,7 @@ import java.io.Serializable;
 @Setter
 @Getter
 @RedisHash("car")
+@NoArgsConstructor
 public class Car implements Serializable {
     private String id;
     @Version

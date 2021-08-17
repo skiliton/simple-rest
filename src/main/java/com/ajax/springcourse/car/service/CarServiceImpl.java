@@ -27,13 +27,16 @@ public class CarServiceImpl implements CarService {
                 .findAll()
                 .stream()
                 .map(CarReadDto::new)
-                .collect(Collectors.toList())
-                ;
+                .collect(Collectors.toList());
     }
 
     @Override
-    public CarReadDto findByModel(String model) {
-        return new CarReadDto(repository.findByModel(model).orElseThrow());
+    public List<CarReadDto> findByModel(String model) {
+        return repository
+                .findByModel(model)
+                .stream()
+                .map(CarReadDto::new)
+                .collect(Collectors.toList());
     }
 
     @Override

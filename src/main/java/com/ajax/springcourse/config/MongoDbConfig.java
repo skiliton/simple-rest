@@ -18,12 +18,12 @@ public class MongoDbConfig {
     private String mongoDbUri;
 
     @Bean
-    public MongoDatabaseFactory mongoDatabaseFactory(){
+    public MongoDatabaseFactory mongoDatabaseFactory() {
         return new SimpleMongoClientDatabaseFactory(mongoDbUri);
     }
 
     @Bean
-    public MongoTemplate mongoTemplate(MongoDatabaseFactory mongoDatabaseFactory){
+    public MongoTemplate mongoTemplate(MongoDatabaseFactory mongoDatabaseFactory) {
         return new MongoTemplate(mongoDatabaseFactory);
     }
 }

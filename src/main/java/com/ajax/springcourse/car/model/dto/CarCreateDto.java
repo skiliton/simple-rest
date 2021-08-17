@@ -1,7 +1,6 @@
 package com.ajax.springcourse.car.model.dto;
 
 import com.ajax.springcourse.car.model.Car;
-import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -24,14 +23,14 @@ public class CarCreateDto {
     @NotNull
     private String description;
 
-    public CarCreateDto(Car car){
+    public CarCreateDto(Car car) {
         brand = car.getBrand();
         model = car.getModel();
         seats = car.getSeats();
         description = car.getDescription();
     }
 
-    public Car mapToCar(){
-        return new Car(brand,model,seats,description);
+    public Car mapToCar() {
+        return new Car(brand, model, seats, description);
     }
 }

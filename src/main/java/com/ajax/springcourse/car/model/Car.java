@@ -10,7 +10,7 @@ import java.io.Serializable;
 @Setter
 @Getter
 @RedisHash("car")
-public class Car implements Serializable{
+public class Car implements Serializable {
     private String id;
     @Version
     private long version;

@@ -1,10 +1,11 @@
 package com.ajax.springcourse.car.repository;
 
 import com.ajax.springcourse.car.model.Car;
+
 import java.util.List;
 import java.util.Optional;
 
-public interface CarRepository{
+public interface CarRepository {
     Optional<Car> findByModel(String model);
 
     Optional<Car> findById(String id);

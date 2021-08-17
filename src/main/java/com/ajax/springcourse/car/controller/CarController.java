@@ -1,6 +1,5 @@
 package com.ajax.springcourse.car.controller;
 
-import com.ajax.springcourse.car.model.Car;
 import com.ajax.springcourse.car.model.dto.CarCreateDto;
 import com.ajax.springcourse.car.model.dto.CarReadDto;
 import com.ajax.springcourse.car.model.dto.CarUpdateDto;
@@ -19,7 +18,7 @@ import java.util.List;
 )
 @Slf4j
 public class CarController {
-    
+
     private final CarService service;
 
     @Autowired
@@ -28,27 +27,27 @@ public class CarController {
     }
 
     @GetMapping()
-    public List<CarReadDto> findAll(){
+    public List<CarReadDto> findAll() {
         return service.findAll();
     }
 
     @GetMapping("/search/find-by-model")
-    public CarReadDto findByModel(@RequestParam String model){
+    public CarReadDto findByModel(@RequestParam String model) {
         return service.findByModel(model);
     }
 
     @PostMapping()
-    public CarReadDto create(@Valid @RequestBody CarCreateDto carCreateDto){
+    public CarReadDto create(@Valid @RequestBody CarCreateDto carCreateDto) {
         return service.create(carCreateDto);
     }
 
     @GetMapping("/{id}")
-    public CarReadDto findById(@PathVariable String id){
+    public CarReadDto findById(@PathVariable String id) {
         return service.findById(id);
     }
 
     @PatchMapping()
-    public CarReadDto update(@Valid @RequestBody CarUpdateDto carUpdateDto){
+    public CarReadDto update(@Valid @RequestBody CarUpdateDto carUpdateDto) {
         return service.update(carUpdateDto);
     }
 }

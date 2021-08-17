@@ -34,17 +34,17 @@ public class RedisCarRepository implements CarRepository {
     @Override
     public Optional<Car> findByModel(String model) {
         return hashOperations
-                .multiGet(HASH_KEY,getIdsFromModelIndex(model))
+                .multiGet(HASH_KEY, getIdsFromModelIndex(model))
                 .stream()
                 .filter(Car.class::isInstance)
-                .map(obj->(Car) obj)
+                .map(obj -> (Car) obj)
                 .findFirst();
     }
 
-    private List<String> getIdsFromModelIndex(String model){
+    private List<String> getIdsFromModelIndex(String model) {
         Set<Object> objects = setOperations.members(getModelIndexKey(model));
-        if(objects!=null){
-            return objects.stream().map(obj->(String) obj).collect(Collectors.toList());
+        if (objects != null) {
+            return objects.stream().map(obj -> (String) obj).collect(Collectors.toList());
         }
         return Collections.emptyList();
     }

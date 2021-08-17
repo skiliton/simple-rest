@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-public class CarServiceImpl implements CarService{
+public class CarServiceImpl implements CarService {
 
     private final CarRepository repository;
 
@@ -24,11 +24,11 @@ public class CarServiceImpl implements CarService{
     @Override
     public List<CarReadDto> findAll() {
         return repository
-            .findAll()
-            .stream()
-            .map(CarReadDto::new)
-            .collect(Collectors.toList())
-        ;
+                .findAll()
+                .stream()
+                .map(CarReadDto::new)
+                .collect(Collectors.toList())
+                ;
     }
 
     @Override
@@ -48,7 +48,7 @@ public class CarServiceImpl implements CarService{
     }
 
     @Override
-    public CarReadDto update(CarUpdateDto carDto){
+    public CarReadDto update(CarUpdateDto carDto) {
         Car car = repository.findById(carDto.getId()).orElseThrow();
         return new CarReadDto(repository.save(carDto.projectOnto(car)));
     }

@@ -15,7 +15,7 @@ import static org.springframework.data.mongodb.core.query.Query.query;
 
 @Repository
 @Profile("mongo")
-public class MongoDbCarRepository implements CarRepository{
+public class MongoDbCarRepository implements CarRepository {
 
     public static final String COLLECTION_NAME = "cars";
     private final MongoTemplate mongoTemplate;
@@ -28,12 +28,12 @@ public class MongoDbCarRepository implements CarRepository{
     @Override
     public Optional<Car> findByModel(String model) {
         Query query = query(where("model").is(model));
-        return Optional.ofNullable(mongoTemplate.findOne(query,Car.class,COLLECTION_NAME));
+        return Optional.ofNullable(mongoTemplate.findOne(query, Car.class, COLLECTION_NAME));
     }
 
     @Override
     public Optional<Car> findById(String id) {
-        return Optional.ofNullable(mongoTemplate.findById(id,Car.class,COLLECTION_NAME));
+        return Optional.ofNullable(mongoTemplate.findById(id, Car.class, COLLECTION_NAME));
     }
 
     @Override
@@ -43,6 +43,6 @@ public class MongoDbCarRepository implements CarRepository{
 
     @Override
     public List<Car> findAll() {
-        return mongoTemplate.findAll(Car.class,COLLECTION_NAME);
+        return mongoTemplate.findAll(Car.class, COLLECTION_NAME);
     }
 }

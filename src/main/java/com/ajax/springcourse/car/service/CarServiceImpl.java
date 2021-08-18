@@ -1,5 +1,6 @@
 package com.ajax.springcourse.car.service;
 
+import com.ajax.springcourse.car.exception.CarNotFoundException;
 import com.ajax.springcourse.car.model.Car;
 import com.ajax.springcourse.car.model.dto.CarCreateDto;
 import com.ajax.springcourse.car.model.dto.CarReadDto;
@@ -43,7 +44,11 @@ public class CarServiceImpl implements CarService {
 
     @Override
     public CarReadDto findById(String id) {
-        return new CarReadDto(repository.findById(id).orElseThrow());
+        return new CarReadDto(repository
+                .findById(id)
+                .orElseThrow(
+                    ()->new CarNotFoundException("Couldn't find car with id="+id)
+                ));
     }
 
     @Override

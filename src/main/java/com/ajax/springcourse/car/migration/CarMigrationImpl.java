@@ -3,6 +3,7 @@ package com.ajax.springcourse.car.migration;
 import com.ajax.springcourse.car.model.Car;
 import com.ajax.springcourse.car.repository.CarRepository;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -16,7 +17,7 @@ public class CarMigrationImpl implements CarMigration {
     }
 
     @Override
-    public List<Car> migrate() {
+    public MigrationResult migrate() {
         toRepository.deleteAll();
         fromRepository
                 .findAll()
@@ -26,9 +27,17 @@ public class CarMigrationImpl implements CarMigration {
         List<Car> carsFrom = fromRepository.findAll();
         List<Car> carsTo = toRepository.findAll();
         if (carsFrom.containsAll(carsTo) && carsTo.containsAll(carsFrom)) {
-            return Collections.emptyList();
+            return new MigrationResult();
         }
-        carsTo.removeAll(carsFrom);
-        return carsTo;
+        List<Car> carsNotFound = removeAll(carsFrom,carsTo);
+        List<Car> extraCars = removeAll(carsTo,carsFrom);
+        return new MigrationResult(extraCars,carsNotFound);
+    }
+
+    private List<Car> removeAll(List<Car> from, List<Car> what){
+        List<Car> res = new ArrayList<>();
+        Collections.copy(from,res);
+        res.removeAll(what);
+        return res;
     }
 }

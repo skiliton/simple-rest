@@ -1,6 +1,7 @@
 package com.ajax.springcourse.car.controller;
 
 import com.ajax.springcourse.car.migration.CarMigration;
+import com.ajax.springcourse.car.migration.MigrationResult;
 import com.ajax.springcourse.car.model.Car;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Profile;
@@ -28,12 +29,12 @@ public class MigrationController {
     }
 
     @GetMapping("/mongoToRedis")
-    List<Car> fromMongoToRedis() {
+    MigrationResult fromMongoToRedis() {
         return mongoToRedisMigration.migrate();
     }
 
     @GetMapping("/redisToMongo")
-    List<Car> fromRedisToMongo() {
+    MigrationResult fromRedisToMongo() {
         return redisToMongoMigration.migrate();
     }
 }

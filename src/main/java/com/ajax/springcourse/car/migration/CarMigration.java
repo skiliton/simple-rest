@@ -5,5 +5,5 @@ import com.ajax.springcourse.car.model.Car;
 import java.util.List;
 
 public interface CarMigration {
-    List<Car> migrate();
+    MigrationResult migrate();
 }

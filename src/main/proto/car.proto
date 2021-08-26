@@ -28,9 +28,10 @@ message StringParam {
 }
 
 service CarService {
-  rpc findAll(google.protobuf.Empty) returns (stream CarReadDto) {}
+  rpc findAll(stream google.protobuf.Empty) returns (stream CarReadDto) {}
   rpc findByModel(StringParam) returns (stream CarReadDto) {}
   rpc create(CarCreateDto) returns (CarReadDto) {}
   rpc findById(StringParam) returns (CarReadDto) {}
   rpc update(CarUpdateDto) returns (CarReadDto) {}
+  rpc deleteAll(google.protobuf.Empty) returns (google.protobuf.Empty) {}
 }

@@ -66,4 +66,9 @@ public class CarServiceImpl implements CarService {
                 );
         return new CarReadDto(repository.save(carDto.projectOnto(car)));
     }
+
+    @Override
+    public void deleteAll() {
+        repository.deleteAll();
+    }
 }

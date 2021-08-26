@@ -5,6 +5,7 @@ import com.ajax.springcourse.car.model.dto.CarCreateDto;
 import com.ajax.springcourse.car.model.dto.CarReadDto;
 import com.ajax.springcourse.car.model.dto.CarUpdateDto;
 import com.ajax.springcourse.car.model.mapper.GrpcCarDtoMapper;
+import com.ajax.springcourse.car.observable.GrpcCarStreamObservable;
 import com.ajax.springcourse.car.service.CarService;
 import com.ajax.springcourse.grpc.Car;
 import com.ajax.springcourse.grpc.CarServiceGrpc;
@@ -21,17 +22,37 @@ public class GrpcCarController extends CarServiceGrpc.CarServiceImplBase {
 
     private final CarService carService;
 
+    private final GrpcCarStreamObservable carStreamObservable;
+
     @Autowired
-    public GrpcCarController(CarService carService) {
+    public GrpcCarController(CarService carService, GrpcCarStreamObservable carStreamObservable) {
         this.carService = carService;
+        this.carStreamObservable = carStreamObservable;
     }
 
     @Override
-    public void findAll(Empty request, StreamObserver<Car.CarReadDto> responseObserver) {
-        carService.findAll().stream()
-                .map(GrpcCarDtoMapper::mapToGrpcCarReadDto)
-                .forEach(responseObserver::onNext);
-        responseObserver.onCompleted();
+    public StreamObserver<Empty> findAll(final StreamObserver<Car.CarReadDto> responseObserver) {
+        return new StreamObserver<>() {
+            @Override
+            public void onNext(Empty value) {
+                carService.findAll().stream()
+                        .map(GrpcCarDtoMapper::mapToGrpcCarReadDto)
+                        .forEach(responseObserver::onNext);
+                carStreamObservable.addObserver(responseObserver);
+            }
+
+            @Override
+            public void onError(Throwable t) {
+                carStreamObservable.removeObserver(responseObserver);
+                t.printStackTrace();
+            }
+
+            @Override
+            public void onCompleted() {
+                carStreamObservable.removeObserver(responseObserver);
+                responseObserver.onCompleted();
+            }
+        };
     }
 
     @Override
@@ -47,6 +68,7 @@ public class GrpcCarController extends CarServiceGrpc.CarServiceImplBase {
         CarCreateDto carCreateDto = GrpcCarDtoMapper.mapToCarCreateDto(request);
         Car.CarReadDto grpcCarReadDto = GrpcCarDtoMapper.mapToGrpcCarReadDto(carService.create(carCreateDto));
         responseObserver.onNext(grpcCarReadDto);
+        carStreamObservable.newCarReadDto(grpcCarReadDto);
         responseObserver.onCompleted();
     }
 
@@ -75,13 +97,20 @@ public class GrpcCarController extends CarServiceGrpc.CarServiceImplBase {
             carReadDto = carService.update(carUpdateDto);
         }catch (CarNotFoundException e){
             responseObserver.onError(
-                    Status.INVALID_ARGUMENT
+                    Status.NOT_FOUND
                             .withDescription(e.getMessage())
                             .asException());
             return;
         }
         Car.CarReadDto grpcCarReadDto  = GrpcCarDtoMapper.mapToGrpcCarReadDto(carReadDto);
         responseObserver.onNext(grpcCarReadDto);
+        responseObserver.onCompleted();
+    }
+
+    @Override
+    public void deleteAll(Empty request, StreamObserver<Empty> responseObserver) {
+        carService.deleteAll();
+        responseObserver.onNext(Empty.getDefaultInstance());
         responseObserver.onCompleted();
     }
 }

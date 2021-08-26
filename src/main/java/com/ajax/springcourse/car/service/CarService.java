@@ -16,4 +16,6 @@ public interface CarService {
     CarReadDto create(CarCreateDto carCreateDto);
 
     CarReadDto update(CarUpdateDto carDto);
+
+    void deleteAll();
 }

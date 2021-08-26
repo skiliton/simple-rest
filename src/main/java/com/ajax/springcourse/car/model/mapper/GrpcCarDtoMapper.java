@@ -19,16 +19,6 @@ public class GrpcCarDtoMapper {
                 .build();
     }
 
-    public static Car.CarReadDtoList mapToGrpcCarReadDto(List<CarReadDto> dtos) {
-        return Car.CarReadDtoList.newBuilder()
-                .addAllDtos(
-                    dtos.stream()
-                        .map(GrpcCarDtoMapper::mapToGrpcCarReadDto)
-                        .collect(Collectors.toList()))
-                .build();
-
-    }
-
     public static CarCreateDto mapToCarCreateDto(Car.CarCreateDto grpcCarCreateDto) {
         CarCreateDto carCreateDto = new CarCreateDto();
         carCreateDto.setBrand(grpcCarCreateDto.getBrand());

@@ -23,17 +23,13 @@ message CarCreateDto {
   string description = 4;
 }
 
-message CarReadDtoList {
-  repeated CarReadDto dtos = 1;
-}
-
 message StringParam {
   string value = 1;
 }
 
 service CarService {
-  rpc findAll(google.protobuf.Empty) returns (CarReadDtoList) {}
-  rpc findByModel(StringParam) returns (CarReadDtoList) {}
+  rpc findAll(google.protobuf.Empty) returns (stream CarReadDto) {}
+  rpc findByModel(StringParam) returns (stream CarReadDto) {}
   rpc create(CarCreateDto) returns (CarReadDto) {}
   rpc findById(StringParam) returns (CarReadDto) {}
   rpc update(CarUpdateDto) returns (CarReadDto) {}

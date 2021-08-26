@@ -1,5 +1,6 @@
 package com.ajax.springcourse.car.controller;
 
+import com.ajax.springcourse.car.exception.CarNotFoundException;
 import com.ajax.springcourse.car.model.dto.CarCreateDto;
 import com.ajax.springcourse.car.model.dto.CarReadDto;
 import com.ajax.springcourse.car.model.dto.CarUpdateDto;
@@ -8,12 +9,11 @@ import com.ajax.springcourse.car.service.CarService;
 import com.ajax.springcourse.grpc.Car;
 import com.ajax.springcourse.grpc.CarServiceGrpc;
 import com.google.protobuf.Empty;
+import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
 
 @Component
 @Profile({"redis", "mongo"})
@@ -27,24 +27,24 @@ public class GrpcCarController extends CarServiceGrpc.CarServiceImplBase {
     }
 
     @Override
-    public void findAll(Empty request, StreamObserver<Car.CarReadDtoList> responseObserver) {
-        List<CarReadDto> carReadDtos = carService.findAll();
-        Car.CarReadDtoList grpcCarDtoList = GrpcCarDtoMapper.mapToGrpcCarReadDto(carReadDtos);
-        responseObserver.onNext(grpcCarDtoList);
+    public void findAll(Empty request, StreamObserver<Car.CarReadDto> responseObserver) {
+        carService.findAll().stream()
+                .map(GrpcCarDtoMapper::mapToGrpcCarReadDto)
+                .forEach(responseObserver::onNext);
         responseObserver.onCompleted();
     }
 
     @Override
-    public void findByModel(Car.StringParam model, StreamObserver<Car.CarReadDtoList> responseObserver) {
-        List<CarReadDto> cars = carService.findByModel(model.getValue());
-        Car.CarReadDtoList grpcCarDtoList = GrpcCarDtoMapper.mapToGrpcCarReadDto(cars);
-        responseObserver.onNext(grpcCarDtoList);
+    public void findByModel(Car.StringParam model, StreamObserver<Car.CarReadDto> responseObserver) {
+        carService.findByModel(model.getValue()).stream()
+                .map(GrpcCarDtoMapper::mapToGrpcCarReadDto)
+                .forEach(responseObserver::onNext);
         responseObserver.onCompleted();
     }
 
     @Override
-    public void create(Car.CarCreateDto grpcCarCreateDto, StreamObserver<Car.CarReadDto> responseObserver) {
-        CarCreateDto carCreateDto = GrpcCarDtoMapper.mapToCarCreateDto(grpcCarCreateDto);
+    public void create(Car.CarCreateDto request, StreamObserver<Car.CarReadDto> responseObserver) {
+        CarCreateDto carCreateDto = GrpcCarDtoMapper.mapToCarCreateDto(request);
         Car.CarReadDto grpcCarReadDto = GrpcCarDtoMapper.mapToGrpcCarReadDto(carService.create(carCreateDto));
         responseObserver.onNext(grpcCarReadDto);
         responseObserver.onCompleted();
@@ -52,16 +52,35 @@ public class GrpcCarController extends CarServiceGrpc.CarServiceImplBase {
 
     @Override
     public void findById(Car.StringParam id, StreamObserver<Car.CarReadDto> responseObserver) {
-        CarReadDto carReadDto = carService.findById(id.getValue());
+        CarReadDto carReadDto;
+        try {
+            carReadDto = carService.findById(id.getValue());
+        }catch (CarNotFoundException e){
+            responseObserver.onError(
+                    Status.INVALID_ARGUMENT
+                            .withDescription(e.getMessage())
+                            .asException());
+            return;
+        }
         Car.CarReadDto grpcCarReadDto = GrpcCarDtoMapper.mapToGrpcCarReadDto(carReadDto);
         responseObserver.onNext(grpcCarReadDto);
         responseObserver.onCompleted();
     }
 
     @Override
-    public void update(Car.CarUpdateDto grpcCarUpdateDto, StreamObserver<Car.CarReadDto> responseObserver) {
-        CarUpdateDto carUpdateDto = GrpcCarDtoMapper.mapToCarUpdateDto(grpcCarUpdateDto);
-        Car.CarReadDto grpcCarReadDto  = GrpcCarDtoMapper.mapToGrpcCarReadDto(carService.update(carUpdateDto));
+    public void update(Car.CarUpdateDto request, StreamObserver<Car.CarReadDto> responseObserver) {
+        CarUpdateDto carUpdateDto = GrpcCarDtoMapper.mapToCarUpdateDto(request);
+        CarReadDto carReadDto;
+        try {
+            carReadDto = carService.update(carUpdateDto);
+        }catch (CarNotFoundException e){
+            responseObserver.onError(
+                    Status.INVALID_ARGUMENT
+                            .withDescription(e.getMessage())
+                            .asException());
+            return;
+        }
+        Car.CarReadDto grpcCarReadDto  = GrpcCarDtoMapper.mapToGrpcCarReadDto(carReadDto);
         responseObserver.onNext(grpcCarReadDto);
         responseObserver.onCompleted();
     }

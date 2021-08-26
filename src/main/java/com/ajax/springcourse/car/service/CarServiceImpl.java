@@ -59,7 +59,11 @@ public class CarServiceImpl implements CarService {
 
     @Override
     public CarReadDto update(CarUpdateDto carDto) {
-        Car car = repository.findById(carDto.getId()).orElseThrow();
+        Car car = repository
+                .findById(carDto.getId())
+                .orElseThrow(
+                    ()->new CarNotFoundException("Couldn't find car with id="+carDto.getId())
+                );
         return new CarReadDto(repository.save(carDto.projectOnto(car)));
     }
 }

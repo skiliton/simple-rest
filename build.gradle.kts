@@ -31,6 +31,7 @@ val protocVersion = protobufVersion
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-mongodb")
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
+    implementation("org.springframework.boot:spring-boot-starter-data-mongodb-reactive")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
@@ -42,6 +43,10 @@ dependencies {
     implementation("com.google.protobuf:protobuf-java-util:${protobufVersion}")
     compileOnly("org.projectlombok:lombok")
     runtimeOnly("io.grpc:grpc-netty-shaded:${grpcVersion}")
+
+    implementation(platform("io.projectreactor:reactor-bom:2020.0.10"))
+    implementation("io.projectreactor:reactor-core")
+    implementation("io.projectreactor.kotlin:reactor-kotlin-extensions")
 
     annotationProcessor("org.projectlombok:lombok")
     testImplementation("org.springframework.boot:spring-boot-starter-test")

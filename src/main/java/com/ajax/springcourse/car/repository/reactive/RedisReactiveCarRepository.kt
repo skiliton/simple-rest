@@ -51,13 +51,10 @@ class RedisReactiveCarRepository @Autowired constructor(
 
     override fun save(car: Car): Mono<Car> = Mono
         .just(car)
-        .zipWhen(this::removeModelIndexIfModelChanged)
-        .map { it.t2 }
-        .map(this::createIdIfNotExists)
-        .zipWhen(this::createModelIndexIfNotExists)
-        .map { it.t2 }
-        .zipWhen(this::saveAsHash)
-        .map { it.t2 }
+        .flatMap(this::removeModelIndexIfModelChanged)
+        .flatMap(this::createIdIfNotExists)
+        .flatMap(this::createModelIndexIfNotExists)
+        .flatMap(this::saveAsHash)
 
     override fun findAll(): Flux<Car> = getAllHashKeys()
         .map(hashOperations::entries)
@@ -68,32 +65,34 @@ class RedisReactiveCarRepository @Autowired constructor(
         .flushDb()
         .then(Mono.empty())
 
-    private fun removeModelIndexIfModelChanged(car: Car): Mono<Car> {
-        if (car.id != null) {
-            return hashOperations.entries(getCarHashKey(car.id!!))
-                .reduce(Car(), this::accumulateIntoCar)
-                .filter { oldCar -> oldCar.model != car.model }
-                .doOnNext(this::deleteModelIndex)
-                .then(Mono.just(car))
-        }
-        return Mono.just(car)
-    }
+    private fun removeModelIndexIfModelChanged(car: Car): Mono<Car> = Mono
+        .just(car)
+        .filter {it.id!=null}
+        .flatMap(this::findOldCar)
+        .filter { oldCar -> oldCar.model != car.model }
+        .flatMap(this::deleteModelIndex)
+        .defaultIfEmpty(car)
 
-    private fun saveAsHash(car: Car): Mono<Car> {
-        return hashOperations
-            .putAll(
-                getCarHashKey(car.id!!),
-                carToEntries(car)
-            )
-            .then(Mono.just(car))
-    }
+    private fun findOldCar(car: Car): Mono<Car> = hashOperations
+        .entries(getCarHashKey(car.id!!))
+        .reduce(Car(), this::accumulateIntoCar)
 
-    private fun createIdIfNotExists(car: Car): Car {
-        if (car.id == null) {
+    private fun saveAsHash(car: Car): Mono<Car> = hashOperations
+        .putAll(
+            getCarHashKey(car.id!!),
+            carToEntries(car)
+        )
+        .then(Mono.just(car))
+
+
+    private fun createIdIfNotExists(car: Car): Mono<Car> = Mono
+        .just(car)
+        .filter{it.id==null}
+        .map {
             car.id = UUID.randomUUID().toString()
-        }
-        return car
-    }
+            car
+        }.defaultIfEmpty(car)
+
 
     private fun carToEntries(car: Car): MutableMap<String, String> {
         val entries: MutableMap<String, String> = HashMap()
@@ -108,15 +107,14 @@ class RedisReactiveCarRepository @Autowired constructor(
     private fun createModelIndexIfNotExists(car: Car): Mono<Car> = setOperations
         .add(
             getModelIndexKey(car.model),
-            getCarHashKey(car.id!!)
-        )
+            getCarHashKey(car.id!!))
         .then(Mono.just(car))
 
     private fun deleteModelIndex(car: Car) = setOperations
         .remove(
             getModelIndexKey(car.model),
-            getCarHashKey(car.id!!)
-        )
+            getCarHashKey(car.id!!))
+        .then(Mono.just(car))
 
     private fun getAllHashKeys(): Flux<String> = template
         .keys("cars:*")

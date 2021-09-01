@@ -3,6 +3,7 @@ package com.ajax.springcourse.config;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 import org.springframework.data.redis.connection.ReactiveRedisConnection;
 import org.springframework.data.redis.connection.ReactiveRedisConnectionFactory;
@@ -15,7 +16,7 @@ import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Configuration
-@Profile({"redis", "migration"})
+@Profile({"redis", "migration","redis_reactive"})
 public class RedisConfig {
 
     @Value("${spring.redis.host}")
@@ -25,43 +26,41 @@ public class RedisConfig {
     private int redisPort;
 
     @Bean
-    JedisConnectionFactory jedisConnectionFactory() {
-        //RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(redisHostName, redisPort);
-        return new JedisConnectionFactory();
-    }
-
-    @Bean
-    public ReactiveRedisConnectionFactory reactiveRedisConnectionFactory() {
+    public LettuceConnectionFactory lettuceConnectionFactory() {
         return new LettuceConnectionFactory("localhost", 6379);
     }
 
     @Bean
-    RedisConnection redisConnection() {
-        return jedisConnectionFactory().getConnection();
+    RedisConnection redisConnection(LettuceConnectionFactory factory) {
+        return factory.getConnection();
     }
 
     @Bean
-    ReactiveRedisConnection reactiveRedisConnection() {
-        return  reactiveRedisConnectionFactory().getReactiveConnection();
+    ReactiveRedisConnection reactiveRedisConnection(LettuceConnectionFactory factory) {
+        return factory.getReactiveConnection();
     }
 
     @Bean
-    public ReactiveRedisTemplate<String,String> reactiveRedisTemplate(){
+    @Primary
+    public ReactiveRedisTemplate<String,String> reactiveRedisTemplate(LettuceConnectionFactory factory){
         return new ReactiveRedisTemplate<>(
-                reactiveRedisConnectionFactory(),
+                factory,
                 RedisSerializationContext
                     .<String, String>newSerializationContext()
                     .key(StringRedisSerializer.UTF_8)
                     .value(StringRedisSerializer.UTF_8)
+                    .hashKey(StringRedisSerializer.UTF_8)
+                    .hashValue(StringRedisSerializer.UTF_8)
                     .build());
     }
 
     @Bean
-    public RedisTemplate<String, String> redisTemplate() {
+    @Primary
+    public RedisTemplate<String, String> redisTemplate(LettuceConnectionFactory factory) {
         final RedisTemplate<String, String> template = new RedisTemplate<>();
-        template.setConnectionFactory(jedisConnectionFactory());
-        template.setKeySerializer(new StringRedisSerializer());
-        template.setValueSerializer(new StringRedisSerializer());
+        template.setConnectionFactory(factory);
+        template.setKeySerializer(StringRedisSerializer.UTF_8);
+        template.setValueSerializer(StringRedisSerializer.UTF_8);
         return template;
     }
 }

@@ -3,7 +3,7 @@ package com.ajax.springcourse.car.controller
 import com.ajax.springcourse.car.model.dto.CarCreateDto
 import com.ajax.springcourse.car.model.dto.CarReadDto
 import com.ajax.springcourse.car.model.dto.CarUpdateDto
-import com.ajax.springcourse.car.service.ReactiveCarService
+import com.ajax.springcourse.car.service.reactive.ReactiveCarService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Controller

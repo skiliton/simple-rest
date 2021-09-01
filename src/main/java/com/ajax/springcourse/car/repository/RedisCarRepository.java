@@ -144,5 +144,4 @@ public class RedisCarRepository implements CarRepository {
         entries.put(DESCRIPTION, car.getDescription());
         return entries;
     }
-
 }

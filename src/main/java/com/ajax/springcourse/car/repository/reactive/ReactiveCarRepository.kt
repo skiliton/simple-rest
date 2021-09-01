@@ -1,4 +1,4 @@
-package com.ajax.springcourse.car.repository
+package com.ajax.springcourse.car.repository.reactive
 
 import com.ajax.springcourse.car.model.Car
 import reactor.core.publisher.Flux

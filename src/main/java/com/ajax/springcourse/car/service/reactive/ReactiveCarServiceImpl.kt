@@ -1,10 +1,11 @@
-package com.ajax.springcourse.car.service
+package com.ajax.springcourse.car.service.reactive
 
 import com.ajax.springcourse.car.exception.CarNotFoundException
 import com.ajax.springcourse.car.model.dto.CarCreateDto
 import com.ajax.springcourse.car.model.dto.CarReadDto
 import com.ajax.springcourse.car.model.dto.CarUpdateDto
-import com.ajax.springcourse.car.repository.ReactiveCarRepository
+import com.ajax.springcourse.car.repository.reactive.ReactiveCarRepository
+import com.ajax.springcourse.car.service.reactive.ReactiveCarService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service

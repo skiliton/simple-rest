@@ -53,6 +53,9 @@ dependencies {
     annotationProcessor("org.projectlombok:lombok")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("io.grpc:grpc-testing:${grpcVersion}")
+    testImplementation("org.mockito:mockito-core:3.12.4")
+    testImplementation("io.projectreactor:reactor-test")
+
 }
 
 idea {

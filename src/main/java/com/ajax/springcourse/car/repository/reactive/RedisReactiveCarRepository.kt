@@ -41,7 +41,7 @@ class RedisReactiveCarRepository @Autowired constructor(
         keyOperations = template.opsForValue()
     }
 
-    override fun findByModel(model: String): Flux<Car> = getHashesFromModel(model)
+    override fun findByModel(model: String): Flux<Car> = findHashIdsByModel(model)
         .map(hashOperations::entries)
         .flatMap(this::fluxToCarMono)
 
@@ -119,7 +119,7 @@ class RedisReactiveCarRepository @Autowired constructor(
     private fun getAllHashKeys(): Flux<String> = template
         .keys("cars:*")
 
-    private fun getHashesFromModel(model: String): Flux<String> = setOperations
+    private fun findHashIdsByModel(model: String): Flux<String> = setOperations
         .members(getModelIndexKey(model))
 
     private fun getModelIndexKey(model: String): String = "indexes:cars:model:$model"

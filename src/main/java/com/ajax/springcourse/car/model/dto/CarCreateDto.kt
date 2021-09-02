@@ -9,5 +9,10 @@ class CarCreateDto(
     var seats: @Min(1) Int = 1,
     var description: String = ""
 ) {
-    fun mapToCar(): Car = Car(brand, model, seats, description)
+    fun mapToCar(): Car = Car(
+        brand = brand,
+        model = model,
+        seats = seats,
+        description = description
+    )
 }

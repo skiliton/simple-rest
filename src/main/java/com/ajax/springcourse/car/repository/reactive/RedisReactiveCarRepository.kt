@@ -2,20 +2,15 @@ package com.ajax.springcourse.car.repository.reactive
 
 import com.ajax.springcourse.car.model.Car
 import com.ajax.springcourse.car.repository.RedisCarRepository
-import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
-import org.springframework.data.redis.connection.ReactiveRedisConnection
 import org.springframework.data.redis.core.ReactiveHashOperations
 import org.springframework.data.redis.core.ReactiveRedisTemplate
 import org.springframework.data.redis.core.ReactiveSetOperations
-import org.springframework.data.redis.core.ReactiveValueOperations
 import org.springframework.stereotype.Component
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
-import reactor.kotlin.core.publisher.toFlux
 import java.util.*
-import java.util.logging.Level
 import javax.annotation.PostConstruct
 
 @Component

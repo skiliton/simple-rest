@@ -1,6 +1,7 @@
 package com.ajax.springcourse.car.repository.reactive
 
 import com.ajax.springcourse.car.model.Car
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate
@@ -12,9 +13,18 @@ import reactor.test.StepVerifier
 
 class MongoDbReactiveCarRepositoryTest {
 
+    lateinit var template: ReactiveMongoTemplate
+    lateinit var repo: MongoDbReactiveCarRepository
+
+    @BeforeEach
+    fun beforeEach(){
+        template = Mockito.mock(ReactiveMongoTemplate::class.java)
+        repo = MongoDbReactiveCarRepository(template)
+    }
+
     @Test
-    fun Given_MongoTemplate_When_AskedToFindByModel_Then_DelegateCallToMongo() {
-        val template = Mockito.mock(ReactiveMongoTemplate::class.java)
+    fun shouldDelegateFindByModelCallToMongo() {
+        //GIVEN
         Mockito.`when`(
             template.find(
                 Query.query(Criteria.where("model").`is`("md")),
@@ -28,15 +38,16 @@ class MongoDbReactiveCarRepositoryTest {
                 Car("id3", "br3", "md", 3, "ds3")
             ).concatWith(Flux.error(Exception("Unexpected exception")))
         )
-
-        val repo = MongoDbReactiveCarRepository(template)
-
-        StepVerifier.create(repo.findByModel("md"))
-            .expectNext(Car("id1", "br1", "md", 1, "ds1"))
-            .expectNext(Car("id2", "br2", "md", 2, "ds2"))
-            .expectNext(Car("id3", "br3", "md", 3, "ds3"))
-            .expectError(Exception::class.java)
-            .verify()
+        StepVerifier.create(
+        //WHEN
+            repo.findByModel("md")
+        )
+        //THEN
+        .expectNext(Car("id1", "br1", "md", 1, "ds1"))
+        .expectNext(Car("id2", "br2", "md", 2, "ds2"))
+        .expectNext(Car("id3", "br3", "md", 3, "ds3"))
+        .expectError(Exception::class.java)
+        .verify()
         Mockito.verify(template).find(
             Query.query(Criteria.where("model").`is`("md")),
             Car::class.java,
@@ -45,8 +56,8 @@ class MongoDbReactiveCarRepositoryTest {
     }
 
     @Test
-    fun Given_MongoTemplate_When_AskedToFindById_Then_DelegateCallToMongo() {
-        val template = Mockito.mock(ReactiveMongoTemplate::class.java)
+    fun shouldDelegateFindByIdCallToMongo() {
+        //GIVEN
         Mockito.`when`(
             template.findById(
                 "id",
@@ -59,11 +70,13 @@ class MongoDbReactiveCarRepositoryTest {
             )
         )
 
-        val repo = MongoDbReactiveCarRepository(template)
-
-        StepVerifier.create(repo.findById("id"))
-            .expectNext(Car("id", "br", "md", 1, "ds"))
-            .verifyComplete()
+        StepVerifier.create(
+        //WHEN
+            repo.findById("id")
+        )
+        //THEN
+        .expectNext(Car("id", "br", "md", 1, "ds"))
+        .verifyComplete()
         Mockito.verify(template).findById(
             "id",
             Car::class.java,
@@ -72,8 +85,8 @@ class MongoDbReactiveCarRepositoryTest {
     }
 
     @Test
-    fun Given_MongoTemplate_When_AskedToSave_Then_DelegateCallToMongoTemplate() {
-        val template = Mockito.mock(ReactiveMongoTemplate::class.java)
+    fun shouldDelegateSaveCallToMongoTemplate() {
+        //GIVEN
         Mockito.`when`(
             template.save(
                 Car("id", "br", "md", 1, "ds"),
@@ -84,16 +97,13 @@ class MongoDbReactiveCarRepositoryTest {
                 Car("id", "br", "md", 1, "ds")
             )
         )
-
-        val repo = MongoDbReactiveCarRepository(template)
-
         StepVerifier.create(
-            repo.save(
-                Car("id", "br", "md", 1, "ds")
-            )
-        ).expectNext(
-            Car("id", "br", "md", 1, "ds")
-        ).verifyComplete()
+        //WHEN
+            repo.save(Car("id", "br", "md", 1, "ds"))
+        )
+        //THEN
+        .expectNext(Car("id", "br", "md", 1, "ds"))
+        .verifyComplete()
 
         Mockito.verify(template).save(
             Car("id", "br", "md", 1, "ds"),
@@ -102,8 +112,8 @@ class MongoDbReactiveCarRepositoryTest {
     }
 
     @Test
-    fun Given_MongoTemplate_When_AskedToFindAll_Then_DelegateCallToMongoTemplate() {
-        val template = Mockito.mock(ReactiveMongoTemplate::class.java)
+    fun shouldDelegateFindAllCallToMongoTemplate() {
+        //GIVEN
         Mockito.`when`(
             template.findAll(
                 Car::class.java,
@@ -116,14 +126,16 @@ class MongoDbReactiveCarRepositoryTest {
                 Car("id3", "br3", "md3", 3, "ds3"),
             ).concatWith(Flux.error(Exception("Unexpected exception")))
         )
-
-        val repo = MongoDbReactiveCarRepository(template)
-        StepVerifier.create(repo.findAll())
-            .expectNext(Car("id1", "br1", "md1", 1, "ds1"))
-            .expectNext(Car("id2", "br2", "md2", 2, "ds2"))
-            .expectNext(Car("id3", "br3", "md3", 3, "ds3"))
-            .expectError(Exception::class.java)
-            .verify()
+        StepVerifier.create(
+        //WHEN
+            repo.findAll()
+        )
+        //THEN
+        .expectNext(Car("id1", "br1", "md1", 1, "ds1"))
+        .expectNext(Car("id2", "br2", "md2", 2, "ds2"))
+        .expectNext(Car("id3", "br3", "md3", 3, "ds3"))
+        .expectError(Exception::class.java)
+        .verify()
         Mockito.verify(template).findAll(
             Car::class.java,
             MongoDbReactiveCarRepository.COLLECTION_NAME
@@ -131,17 +143,20 @@ class MongoDbReactiveCarRepositoryTest {
     }
 
     @Test
-    fun Given_MongoTemplate_When_AskedToDeleteAll_Then_DelegateCallToMongoTemplate() {
-        val template = Mockito.mock(ReactiveMongoTemplate::class.java)
+    fun shouldDelegateDeleteAllCallToMongoTemplate() {
+        //GIVEN
         Mockito.`when`(
             template.dropCollection(
                 MongoDbReactiveCarRepository.COLLECTION_NAME
             )
         ).thenReturn(Mono.empty())
-
-        val repo = MongoDbReactiveCarRepository(template)
-
-        StepVerifier.create(repo.deleteAll()).verifyComplete()
+        StepVerifier.create(
+        //WHEN
+            repo.deleteAll()
+        )
+        //THEN
+        .expectNext(Unit)
+        .verifyComplete()
         Mockito.verify(template).dropCollection(
             MongoDbReactiveCarRepository.COLLECTION_NAME
         )

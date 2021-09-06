@@ -14,32 +14,38 @@ import reactor.core.publisher.Mono
 
 @Service
 @Profile(value = ["mongo_reactive", "redis_reactive"])
-class ReactiveCarServiceImpl @Autowired constructor(val repository: ReactiveCarRepository) : ReactiveCarService {
+class ReactiveCarServiceImpl (val repository: ReactiveCarRepository) : ReactiveCarService {
 
-    override fun findAll(): Flux<CarReadDto> = repository
+    override fun findAll(): Flux<CarReadDto> =
+        repository
         .findAll()
         .map(::CarReadDto)
 
-    override fun findByModel(model: String): Flux<CarReadDto> = repository
+    override fun findByModel(model: String): Flux<CarReadDto> =
+        repository
         .findByModel(model)
         .map(::CarReadDto)
 
-    override fun findById(id: String): Mono<CarReadDto> = repository
+    override fun findById(id: String): Mono<CarReadDto> =
+        repository
         .findById(id)
         .switchIfEmpty(Mono.error { CarNotFoundException("Couldn't find car with id=$id") })
         .map(::CarReadDto)
 
-    override fun create(carCreateDto: CarCreateDto): Mono<CarReadDto> = repository
+    override fun create(carCreateDto: CarCreateDto): Mono<CarReadDto> =
+        repository
         .save(carCreateDto.mapToCar())
         .map(::CarReadDto)
 
-    override fun update(carDto: CarUpdateDto): Mono<CarReadDto> = repository
+    override fun update(carDto: CarUpdateDto): Mono<CarReadDto> =
+        repository
         .findById(carDto.id)
         .switchIfEmpty(Mono.error { CarNotFoundException("Couldn't find car with id=${carDto.id}") })
         .map(carDto::projectOnto)
         .flatMap(repository::save)
         .map(::CarReadDto)
 
-    override fun deleteAll(): Mono<Unit> = repository
+    override fun deleteAll(): Mono<Unit> =
+        repository
         .deleteAll()
 }

@@ -15,7 +15,7 @@ import javax.annotation.PostConstruct
 
 @Component
 @Profile("redis_reactive")
-class RedisReactiveCarRepository @Autowired constructor(
+class RedisReactiveCarRepository (
     val template: ReactiveRedisTemplate<String, String>
 ) : ReactiveCarRepository {
 
@@ -36,36 +36,42 @@ class RedisReactiveCarRepository @Autowired constructor(
         setOperations = template.opsForSet()
     }
 
-    override fun findByModel(model: String): Flux<Car> = findHashIdsByModel(model)
+    override fun findByModel(model: String): Flux<Car> =
+        findHashIdsByModel(model)
         .map(hashOperations::entries)
         .flatMap(this::entryFluxToCarMono)
 
-    override fun findById(id: String): Mono<Car> = hashOperations
-        .entries(getCarHashKey(id))
+    override fun findById(id: String): Mono<Car> =
+        hashOperations
+        .entries(id.getCarHashKey())
         .`as`(this::entryFluxToCarMono)
         .filter{it!=Car()}
 
 
-    override fun save(car: Car): Mono<Car> = Mono
+    override fun save(car: Car): Mono<Car> =
+        Mono
         .just(car)
         .flatMap(this::removeModelIndexIfModelChanged)
         .flatMap(this::createIdIfNotExists)
         .flatMap(this::createModelIndexIfNotExists)
         .flatMap(this::saveAsHash)
 
-    override fun findAll(): Flux<Car> = getAllHashKeys()
+    override fun findAll(): Flux<Car> =
+        getAllHashKeys()
         .map(hashOperations::entries)
         .flatMap(this::entryFluxToCarMono)
 
-    override fun deleteAll(): Mono<Unit> = deleteAllCarHashes()
+    override fun deleteAll(): Mono<Unit> =
+        deleteAllCarHashes()
         .then(deleteAllCarIndexes())
-        .then(Mono.empty())
+        .then(Mono.just(Unit))
 
     private fun deleteAllCarHashes() = template.delete(getAllHashKeys())
 
     private fun deleteAllCarIndexes() = template.delete(getAllModelIndexes())
 
-    private fun removeModelIndexIfModelChanged(car: Car): Mono<Car> = Mono
+    private fun removeModelIndexIfModelChanged(car: Car): Mono<Car> =
+        Mono
         .just(car)
         .filter {it.id!=null}
         .flatMap(this::findOldCar)
@@ -73,19 +79,22 @@ class RedisReactiveCarRepository @Autowired constructor(
         .flatMap(this::deleteModelIndex)
         .then(Mono.just(car))
 
-    private fun findOldCar(car: Car): Mono<Car> = hashOperations
-        .entries(getCarHashKey(car.id!!))
+    private fun findOldCar(car: Car): Mono<Car> =
+        hashOperations
+        .entries(car.id!!.getCarHashKey())
         .reduce(Car(), this::accumulateIntoCar)
 
-    private fun saveAsHash(car: Car): Mono<Car> = hashOperations
+    private fun saveAsHash(car: Car): Mono<Car> =
+        hashOperations
         .putAll(
-            getCarHashKey(car.id!!),
+            car.id!!.getCarHashKey(),
             carToEntries(car)
         )
         .then(Mono.just(car))
 
 
-    private fun createIdIfNotExists(car: Car): Mono<Car> = Mono
+    private fun createIdIfNotExists(car: Car): Mono<Car> =
+        Mono
         .just(car)
         .filter{it.id==null}
         .map {
@@ -104,31 +113,32 @@ class RedisReactiveCarRepository @Autowired constructor(
         return entries
     }
 
-    private fun createModelIndexIfNotExists(car: Car): Mono<Car> = setOperations
+    private fun createModelIndexIfNotExists(car: Car): Mono<Car> =
+        setOperations
         .add(
-            getModelIndexKey(car.model),
-            getCarHashKey(car.id!!))
+            car.model.getModelIndexKey(),
+            car.id!!.getCarHashKey())
         .then(Mono.just(car))
 
-    private fun deleteModelIndex(car: Car) = setOperations
+    private fun deleteModelIndex(car: Car) =
+        setOperations
         .remove(
-            getModelIndexKey(car.model),
-            getCarHashKey(car.id!!))
+            car.model.getModelIndexKey(),
+            car.id!!.getCarHashKey())
         .then(Mono.just(car))
 
-    private fun getAllHashKeys(): Flux<String> = template
-        .keys(getCarHashKey("*"))
+    private fun getAllHashKeys(): Flux<String> =
+        template
+        .keys("*".getCarHashKey())
 
-    private fun getAllModelIndexes(): Flux<String> = template
-        .keys(getModelIndexKey("*"))
+    private fun getAllModelIndexes(): Flux<String> =
+        template
+        .keys("*".getModelIndexKey())
 
-    private fun findHashIdsByModel(model: String): Flux<String> = setOperations
-        .members(getModelIndexKey(model))
-        .map(this::getCarHashKey)
-
-    private fun getModelIndexKey(model: String): String = "indexes:cars:model:$model"
-
-    private fun getCarHashKey(id: String): String = "cars:$id"
+    private fun findHashIdsByModel(model: String): Flux<String> =
+        setOperations
+        .members(model.getModelIndexKey())
+        .map (String::getCarHashKey)
 
     private fun accumulateIntoCar(car: Car, entry: Map.Entry<String, String>): Car {
         when (entry.key) {
@@ -141,6 +151,11 @@ class RedisReactiveCarRepository @Autowired constructor(
         return car
     }
 
-    private fun entryFluxToCarMono(entries: Flux<Map.Entry<String, String>>): Mono<Car> = entries
+    private fun entryFluxToCarMono(entries: Flux<Map.Entry<String, String>>): Mono<Car> =
+        entries
         .reduceWith(::Car, this::accumulateIntoCar)
 }
+
+private fun String.getModelIndexKey(): String = "indexes:cars:model:$this"
+
+private fun String.getCarHashKey(): String = "cars:$this"

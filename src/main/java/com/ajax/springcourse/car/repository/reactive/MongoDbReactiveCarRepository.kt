@@ -13,21 +13,23 @@ import reactor.core.publisher.Mono
 
 @Component
 @Profile("mongo_reactive")
-class MongoDbReactiveCarRepository @Autowired constructor(val template: ReactiveMongoTemplate):
+class MongoDbReactiveCarRepository (val template: ReactiveMongoTemplate):
     ReactiveCarRepository {
 
     companion object{
         const val COLLECTION_NAME = "cars"
     }
 
-    override fun findByModel(model: String): Flux<Car> = template
+    override fun findByModel(model: String): Flux<Car> =
+        template
         .find(
             query(where("model").`is`(model)),
             Car::class.java,
             COLLECTION_NAME
         )
 
-    override fun findById(id: String): Mono<Car> = template
+    override fun findById(id: String): Mono<Car> =
+        template
         .findById(
             id,
             Car::class.java,
@@ -38,5 +40,5 @@ class MongoDbReactiveCarRepository @Autowired constructor(val template: Reactive
 
     override fun findAll(): Flux<Car> = template.findAll(Car::class.java, COLLECTION_NAME)
 
-    override fun deleteAll(): Mono<Unit> = template.dropCollection(COLLECTION_NAME).then(Mono.empty())
+    override fun deleteAll(): Mono<Unit> = template.dropCollection(COLLECTION_NAME).then(Mono.just(Unit))
 }

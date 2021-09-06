@@ -42,8 +42,8 @@ class RedisReactiveCarRepositoryTest{
     }
 
     @Test
-    fun Given_SavedCarsWithSpecifiedModel_When_AskedToFindBySpecifiedModel_Then_ReturnFluxOfCarsWithThatModel(){
-
+    fun shouldReturnFluxOfCarsWithRequetsedModel(){
+        //GIVEN
         Mockito
             .`when`(
                 setOps.members("indexes:cars:model:md"))
@@ -71,28 +71,35 @@ class RedisReactiveCarRepositoryTest{
                     "description" to "ds2"
                 ).entries.toTypedArray()))
 
-        StepVerifier.create(repo.findByModel("md"))
-            .expectNext(Car("id1","br1","md",1,"ds1"))
-            .expectNext(Car("id2","br2","md",2,"ds2"))
-            .verifyComplete()
+        StepVerifier.create(
+        //WHEN
+            repo.findByModel("md")
+        )
+        //THEN
+        .expectNext(Car("id1","br1","md",1,"ds1"))
+        .expectNext(Car("id2","br2","md",2,"ds2"))
+        .verifyComplete()
     }
 
     @Test
-    fun Given_NoSavedCarsWithSpecifiedModel_When_AskedToFindByModel_Then_ReturnEmptyFlux(){
-
+    fun shouldReturnEmptyFluxIfNoCarsWithSpecifiedModelExist(){
+        //GIVEN
         Mockito
             .`when`(
                 setOps.members("indexes:cars:model:md"))
             .thenReturn(Flux.empty())
-
-        StepVerifier.create(repo.findByModel("md"))
-            .verifyComplete()
-
+        StepVerifier.create(
+        //WHEN
+            repo.findByModel("md")
+        )
+        //THEN
+        .verifyComplete()
         Mockito.verify(hashOps,Mockito.never()).entries(Mockito.any())
     }
 
     @Test
-    fun Given_SavedCarWithSpecifiedId_When_AskedToFindBySpecifiedId_Then_ReturnMonoOfCarWithThatId(){
+    fun shouldReturnMonoOfCarWithSpecifiedId(){
+        //GIVEN
         Mockito
             .`when`(
                 hashOps.entries("cars:id"))
@@ -105,23 +112,32 @@ class RedisReactiveCarRepositoryTest{
                     "description" to "ds"
                 ).entries.toTypedArray()))
 
-        StepVerifier.create(repo.findById("id"))
-            .expectNext(Car("id","br","md",1,"ds"))
-            .verifyComplete()
+        StepVerifier.create(
+        //WHEN
+            repo.findById("id")
+        )
+        //THEN
+        .expectNext(Car("id","br","md",1,"ds"))
+        .verifyComplete()
     }
 
     @Test
-    fun Given_NoSavedCarWithSpecifiedId_When_AskedToFindBySpecifiedId_Then_ReturnEmptyMono(){
+    fun shouldReturnEmptyMonoIfCarWithSpecifiedIdDoesNotExist(){
+        //GIVEN
         Mockito
             .`when`(hashOps.entries(Mockito.any()))
             .thenReturn(Flux.empty())
-
-        StepVerifier.create(repo.findById("id"))
-            .verifyComplete()
+        StepVerifier.create(
+        //WHEN
+            repo.findById("id")
+        )
+        //THEN
+        .verifyComplete()
     }
 
     @Test
-    fun Given_CarWithoutId_When_AskedToSave_Then_SetIdPropertyAndCreateModelIndexAndSaveToHash(){
+    fun shouldSetIdPropertyAndCreateModelIndexAndSaveToHash(){
+        //GIVEN
         Mockito
             .`when`(setOps.add(Mockito.eq("indexes:cars:model:md"),Mockito.anyString()))
             .thenReturn(Mono.just(1L))
@@ -134,21 +150,24 @@ class RedisReactiveCarRepositoryTest{
                     map["description"]=="ds"
                 }))
             .thenReturn(Mono.just(false))
-        StepVerifier.create(repo.save(Car(
-            brand = "br",
-            model = "md",
-            seats = 1,
-            description = "ds"
-        ))).expectNextMatches{ car ->
+        StepVerifier.create(
+        //WHEN
+            repo.save(Car(
+                brand = "br",
+                model = "md",
+                seats = 1,
+                description = "ds"
+            ))
+        )
+        //THEN
+        .expectNextMatches{ car ->
             car.brand == "br"&&
             car.model == "md"&&
             car.seats == 1&&
             car.description == "ds"
         }.verifyComplete()
-
         Mockito.verify(setOps)
             .add(Mockito.eq("indexes:cars:model:md"),Mockito.anyString())
-
         Mockito.verify(hashOps)
             .putAll(Mockito.contains("cars:"), Mockito.argThat{map ->
                 map["brand"] == "br"&&
@@ -159,7 +178,8 @@ class RedisReactiveCarRepositoryTest{
     }
 
     @Test
-    fun Given_CarWithIdThatAlreadyExists_When_AskedToSaveCarAndModelsDontMatchWithAlreadyExistentCar_Then_DeleteOldIndexAndCreateNewModelIndexAndSaveToHash(){
+    fun shouldDeleteOldIndexAndCreateNewModelIndexAndSaveToHash(){
+        //GIVEN
         Mockito
             .`when`(setOps.remove("indexes:cars:model:md1","cars:id"))
             .thenReturn(Mono.just(1L))
@@ -185,17 +205,20 @@ class RedisReactiveCarRepositoryTest{
                     "description" to "ds"
                 )))
             .thenReturn(Mono.just(false))
-
-        StepVerifier.create(repo.save(Car("id","br","md2",1,"ds")))
-            .expectNext(Car("id","br","md2",1,"ds"))
-            .verifyComplete()
+        StepVerifier.create(
+        //WHEN
+            repo.save(Car("id","br","md2",1,"ds"))
+        )
+        //THEN
+        .expectNext(Car("id","br","md2",1,"ds"))
+        .verifyComplete()
     }
 
 
 
     @Test
-    fun Given_SavedCars_When_AskedToFindAll_Then_ReturnFluxOfAllCars(){
-
+    fun shouldReturnFluxOfAllCars(){
+        //GIVEN
         Mockito
             .`when`(
                 template.keys("cars:*"))
@@ -222,27 +245,35 @@ class RedisReactiveCarRepositoryTest{
                     "seats" to "2",
                     "description" to "ds2"
                 ).entries.toTypedArray()))
-
-        StepVerifier.create(repo.findAll())
-            .expectNext(Car("id1","br1","md1",1,"ds1"))
-            .expectNext(Car("id2","br2","md2",2,"ds2"))
-            .verifyComplete()
+        StepVerifier.create(
+        //WHEN
+            repo.findAll()
+        )
+        //THEN
+        .expectNext(Car("id1","br1","md1",1,"ds1"))
+        .expectNext(Car("id2","br2","md2",2,"ds2"))
+        .verifyComplete()
     }
 
     @Test
-    fun Given_NoSavedCars_When_AskedToFindAll_Then_ReturnEmptyFlux(){
+    fun shouldReturnEmptyFluxIfThereIsNoSavedCars(){
+        //GIVEN
         Mockito
             .`when`(
                 template.keys("cars:*"))
             .thenReturn(Flux.empty())
-
-        StepVerifier.create(repo.findAll())
-            .verifyComplete()
+        StepVerifier.create(
+        //WHEN
+            repo.findAll()
+        )
+        //THEN
+        .verifyComplete()
         Mockito.verify(hashOps,Mockito.never()).entries(Mockito.any())
     }
 
     @Test
-    fun Given_SavedCars_When_AskedToDeleteAll_Then_DeleteAllHashesAndAllIndexes() {
+    fun shouldDeleteAllHashesAndAllIndexes() {
+        //GIVEN
         Mockito
             .`when`(template.keys("cars:*"))
             .thenReturn(Flux.just("cars:id1","cars:id2","cars:id3"))
@@ -252,7 +283,12 @@ class RedisReactiveCarRepositoryTest{
         Mockito
             .`when`(template.delete(Mockito.any<Flux<String>>()))
             .thenReturn(Mono.empty())
-        StepVerifier.create(repo.deleteAll()).verifyComplete()
+        StepVerifier.create(
+        //WHEN
+            repo.deleteAll()
+        )
+        //THEN
+        .verifyComplete()
         Mockito.verify(template,Mockito.times(2)).delete(Mockito.any<Flux<String>>())
     }
 }

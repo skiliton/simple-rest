@@ -13,7 +13,7 @@ import javax.validation.Valid
 
 @Controller
 @Profile(value = ["mongo_reactive", "redis_reactive"])
-class ReactiveCarController @Autowired constructor(val service: ReactiveCarService){
+class ReactiveCarController (val service: ReactiveCarService){
     fun findAll(): Flux<CarReadDto> = service.findAll()
 
     fun findByModel(model: String): Flux<CarReadDto> = service.findByModel(model)

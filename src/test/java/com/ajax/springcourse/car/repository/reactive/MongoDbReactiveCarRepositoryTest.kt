@@ -1,6 +1,8 @@
 package com.ajax.springcourse.car.repository.reactive
 
+import com.ajax.springcourse.car.CarFixture
 import com.ajax.springcourse.car.model.Car
+import com.ajax.springcourse.car.model.dto.CarReadDto
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
@@ -15,9 +17,10 @@ class MongoDbReactiveCarRepositoryTest {
 
     lateinit var template: ReactiveMongoTemplate
     lateinit var repo: MongoDbReactiveCarRepository
+    private val fixture = CarFixture()
 
     @BeforeEach
-    fun beforeEach(){
+    fun beforeEach() {
         template = Mockito.mock(ReactiveMongoTemplate::class.java)
         repo = MongoDbReactiveCarRepository(template)
     }
@@ -25,140 +28,127 @@ class MongoDbReactiveCarRepositoryTest {
     @Test
     fun shouldDelegateFindByModelCallToMongo() {
         //GIVEN
-        Mockito.`when`(
-            template.find(
-                Query.query(Criteria.where("model").`is`("md")),
-                Car::class.java,
-                MongoDbReactiveCarRepository.COLLECTION_NAME
-            )
-        ).thenReturn(
-            Flux.just(
-                Car("id1", "br1", "md", 1, "ds1"),
-                Car("id2", "br2", "md", 2, "ds2"),
-                Car("id3", "br3", "md", 3, "ds3")
-            ).concatWith(Flux.error(Exception("Unexpected exception")))
-        )
-        StepVerifier.create(
+        val carsWithSameModel = fixture.generateCarsWithSameModel()
+        val model = carsWithSameModel.first().model
+        Mockito
+            .`when`(template.find(
+                    Query.query(Criteria.where("model").`is`(model)),
+                    Car::class.java,
+                    MongoDbReactiveCarRepository.COLLECTION_NAME))
+            .thenReturn(
+                Flux
+                    .just(*carsWithSameModel.toTypedArray())
+                    .concatWith(Flux.error(Exception("Unexpected exception"))))
+        StepVerifier
+            .create(
         //WHEN
-            repo.findByModel("md")
-        )
+                repo.findByModel(model))
         //THEN
-        .expectNext(Car("id1", "br1", "md", 1, "ds1"))
-        .expectNext(Car("id2", "br2", "md", 2, "ds2"))
-        .expectNext(Car("id3", "br3", "md", 3, "ds3"))
-        .expectError(Exception::class.java)
-        .verify()
-        Mockito.verify(template).find(
-            Query.query(Criteria.where("model").`is`("md")),
-            Car::class.java,
-            MongoDbReactiveCarRepository.COLLECTION_NAME
-        )
+            .expectNext(*carsWithSameModel.toTypedArray())
+            .expectError(Exception::class.java)
+            .verify()
+        Mockito
+            .verify(template)
+            .find(
+                Query.query(Criteria.where("model").`is`(model)),
+                Car::class.java,
+                MongoDbReactiveCarRepository.COLLECTION_NAME)
     }
 
     @Test
     fun shouldDelegateFindByIdCallToMongo() {
         //GIVEN
-        Mockito.`when`(
-            template.findById(
-                "id",
+        val car = fixture.generateCar()
+        val id = car.id!!
+        Mockito
+            .`when`(template.findById(
+                id,
                 Car::class.java,
-                MongoDbReactiveCarRepository.COLLECTION_NAME
-            )
-        ).thenReturn(
-            Mono.just(
-                Car("id", "br", "md", 1, "ds")
-            )
-        )
+                MongoDbReactiveCarRepository.COLLECTION_NAME))
+            .thenReturn(Mono.just(car))
 
-        StepVerifier.create(
+        StepVerifier
+            .create(
         //WHEN
-            repo.findById("id")
-        )
+                repo.findById(id))
         //THEN
-        .expectNext(Car("id", "br", "md", 1, "ds"))
-        .verifyComplete()
-        Mockito.verify(template).findById(
-            "id",
-            Car::class.java,
-            MongoDbReactiveCarRepository.COLLECTION_NAME
-        )
+            .expectNext(car)
+            .verifyComplete()
+        Mockito
+            .verify(template)
+            .findById(
+                id,
+                Car::class.java,
+                MongoDbReactiveCarRepository.COLLECTION_NAME)
     }
 
     @Test
     fun shouldDelegateSaveCallToMongoTemplate() {
         //GIVEN
-        Mockito.`when`(
-            template.save(
-                Car("id", "br", "md", 1, "ds"),
-                MongoDbReactiveCarRepository.COLLECTION_NAME
-            )
-        ).thenReturn(
-            Mono.just(
-                Car("id", "br", "md", 1, "ds")
-            )
-        )
-        StepVerifier.create(
+        val car = fixture.generateCar()
+        Mockito
+            .`when`(template.save(
+                car,
+                MongoDbReactiveCarRepository.COLLECTION_NAME))
+            .thenReturn(Mono.just(car))
+        StepVerifier
+            .create(
         //WHEN
-            repo.save(Car("id", "br", "md", 1, "ds"))
-        )
+                repo.save(car))
         //THEN
-        .expectNext(Car("id", "br", "md", 1, "ds"))
-        .verifyComplete()
-
-        Mockito.verify(template).save(
-            Car("id", "br", "md", 1, "ds"),
-            MongoDbReactiveCarRepository.COLLECTION_NAME
-        )
+            .expectNext(car)
+            .verifyComplete()
+        Mockito
+            .verify(template)
+            .save(
+                car,
+                MongoDbReactiveCarRepository.COLLECTION_NAME)
     }
 
     @Test
     fun shouldDelegateFindAllCallToMongoTemplate() {
         //GIVEN
-        Mockito.`when`(
-            template.findAll(
+        val cars = fixture.generateCars()
+        Mockito
+            .`when`(template.findAll(
                 Car::class.java,
-                MongoDbReactiveCarRepository.COLLECTION_NAME
-            )
-        ).thenReturn(
-            Flux.just(
-                Car("id1", "br1", "md1", 1, "ds1"),
-                Car("id2", "br2", "md2", 2, "ds2"),
-                Car("id3", "br3", "md3", 3, "ds3"),
-            ).concatWith(Flux.error(Exception("Unexpected exception")))
+                MongoDbReactiveCarRepository.COLLECTION_NAME))
+            .thenReturn(
+                Flux
+                    .just(*cars.toTypedArray())
+                    .concatWith(Flux.error(Exception("Unexpected exception")))
         )
-        StepVerifier.create(
+        StepVerifier
+            .create(
         //WHEN
-            repo.findAll()
-        )
+                repo.findAll())
         //THEN
-        .expectNext(Car("id1", "br1", "md1", 1, "ds1"))
-        .expectNext(Car("id2", "br2", "md2", 2, "ds2"))
-        .expectNext(Car("id3", "br3", "md3", 3, "ds3"))
-        .expectError(Exception::class.java)
-        .verify()
-        Mockito.verify(template).findAll(
-            Car::class.java,
-            MongoDbReactiveCarRepository.COLLECTION_NAME
-        )
+            .expectNext(*cars.toTypedArray())
+            .expectError(Exception::class.java)
+            .verify()
+        Mockito
+            .verify(template)
+            .findAll(
+                Car::class.java,
+                MongoDbReactiveCarRepository.COLLECTION_NAME)
     }
 
     @Test
     fun shouldDelegateDeleteAllCallToMongoTemplate() {
         //GIVEN
-        Mockito.`when`(
-            template.dropCollection(
-                MongoDbReactiveCarRepository.COLLECTION_NAME
-            )
-        ).thenReturn(Mono.empty())
-        StepVerifier.create(
+        Mockito
+            .`when`(template.dropCollection(
+                MongoDbReactiveCarRepository.COLLECTION_NAME))
+            .thenReturn(Mono.empty())
+        StepVerifier
+            .create(
         //WHEN
-            repo.deleteAll()
-        )
+                repo.deleteAll())
         //THEN
-        .expectNext(Unit)
-        .verifyComplete()
-        Mockito.verify(template).dropCollection(
-            MongoDbReactiveCarRepository.COLLECTION_NAME
-        )
+            .expectNext(Unit)
+            .verifyComplete()
+        Mockito
+            .verify(template)
+            .dropCollection(MongoDbReactiveCarRepository.COLLECTION_NAME)
     }
 }

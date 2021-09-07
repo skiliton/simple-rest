@@ -1,6 +1,7 @@
 syntax = "proto3";
 package com.ajax.springcourse.grpc;
 import "google/protobuf/empty.proto";
+import "google/protobuf/wrappers.proto";
 
 
 message CarUpdateDto {
@@ -23,15 +24,11 @@ message CarCreateDto {
   string description = 4;
 }
 
-message StringParam {
-  string value = 1;
-}
-
 service CarService {
   rpc findAll(stream google.protobuf.Empty) returns (stream CarReadDto) {}
-  rpc findByModel(StringParam) returns (stream CarReadDto) {}
+  rpc findByModel(google.protobuf.StringValue) returns (stream CarReadDto) {}
   rpc create(CarCreateDto) returns (CarReadDto) {}
-  rpc findById(StringParam) returns (CarReadDto) {}
+  rpc findById(google.protobuf.StringValue) returns (CarReadDto) {}
   rpc update(CarUpdateDto) returns (CarReadDto) {}
   rpc deleteAll(google.protobuf.Empty) returns (google.protobuf.Empty) {}
 }

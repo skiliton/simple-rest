@@ -1,5 +1,6 @@
 package com.ajax.springcourse.car.service.reactive
 
+import com.ajax.springcourse.car.CarFixture
 import com.ajax.springcourse.car.exception.CarNotFoundException
 import com.ajax.springcourse.car.model.Car
 import com.ajax.springcourse.car.model.dto.CarCreateDto
@@ -17,6 +18,7 @@ class ReactiveCarServiceImplTest {
 
     lateinit var repo: ReactiveCarRepository
     lateinit var service: ReactiveCarServiceImpl
+    private val fixture = CarFixture()
 
     @BeforeEach
     fun beforeEach(){
@@ -27,34 +29,29 @@ class ReactiveCarServiceImplTest {
     @Test
     fun shouldReturnFluxOfReadDtosOfAllSavedCars() {
         //GIVEN
-        Mockito.`when`(repo.findAll()).thenReturn(
-            Flux.just(
-                Car("id1", "br1", "md1", 1, "ds1"),
-                Car("id2", "br2", "md2", 2, "ds2"),
-                Car("id3", "br3", "md3", 3, "ds3"),
-                Car("id4", "br4", "md4", 4, "ds4"),
-            )
-        )
+        val cars = fixture.generateCars()
+        Mockito
+            .`when`(repo.findAll())
+            .thenReturn(
+                Flux.just(*cars.toTypedArray()))
         StepVerifier.create(
         //WHEN
-            service.findAll()
-        )
+            service.findAll())
         //THEN
-            .expectNext(CarReadDto("id1", "br1", "md1", 1, "ds1"))
-            .expectNext(CarReadDto("id2", "br2", "md2", 2, "ds2"))
-            .expectNext(CarReadDto("id3", "br3", "md3", 3, "ds3"))
-            .expectNext(CarReadDto("id4", "br4", "md4", 4, "ds4"))
+            .expectNext(*cars.map { CarReadDto(it) }.toTypedArray())
             .verifyComplete()
     }
 
     @Test
     fun shouldReturnEmptyFluxIfThereIsNoSavedCars() {
         //GIVEN
-        Mockito.`when`(repo.findAll()).thenReturn(Flux.empty())
-        StepVerifier.create(
+        Mockito
+            .`when`(repo.findAll())
+            .thenReturn(Flux.empty())
+        StepVerifier
+            .create(
         //WHEN
-            service.findAll()
-        )
+                service.findAll())
         //THEN
             .verifyComplete()
     }
@@ -62,34 +59,31 @@ class ReactiveCarServiceImplTest {
     @Test
     fun shouldReturnFluxOfReadDtosForCarsWithSpecifiedModel() {
         //GIVEN
-        Mockito.`when`(repo.findByModel("md")).thenReturn(
-            Flux.just(
-                Car("id1", "br1", "md", 1, "ds1"),
-                Car("id2", "br2", "md", 2, "ds2"),
-                Car("id3", "br3", "md", 3, "ds3"),
-                Car("id4", "br4", "md", 4, "ds4"),
-            )
-        )
-        StepVerifier.create(
+        val carsWithSameModel = fixture.generateCarsWithSameModel()
+        val model = carsWithSameModel.first().model
+        Mockito
+            .`when`(repo.findByModel(model))
+            .thenReturn(
+                Flux.just(*carsWithSameModel.toTypedArray()))
+        StepVerifier
+            .create(
         //WHEN
-            service.findByModel("md")
-        )
+                service.findByModel(model))
         //THEN
-            .expectNext(CarReadDto("id1", "br1", "md", 1, "ds1"))
-            .expectNext(CarReadDto("id2", "br2", "md", 2, "ds2"))
-            .expectNext(CarReadDto("id3", "br3", "md", 3, "ds3"))
-            .expectNext(CarReadDto("id4", "br4", "md", 4, "ds4"))
+            .expectNext(*carsWithSameModel.map{CarReadDto(it)}.toTypedArray())
             .verifyComplete()
     }
 
     @Test
     fun shouldReturnEmptyFluxIfSpecifiedModelDoesNotExist() {
         //GIVEN
-        Mockito.`when`(repo.findByModel("md")).thenReturn(Flux.empty())
-        StepVerifier.create(
+        Mockito
+            .`when`(repo.findByModel("md"))
+            .thenReturn(Flux.empty())
+        StepVerifier
+            .create(
         //WHEN
-            service.findByModel("md")
-        )
+                service.findByModel("md"))
         //THEN
             .verifyComplete()
     }
@@ -97,28 +91,30 @@ class ReactiveCarServiceImplTest {
     @Test
     fun shouldReturnMonoOfReadDtoForCarsWithSpecifiedId() {
         //GIVEN
-        Mockito.`when`(repo.findById("id1")).thenReturn(
-            Mono.just(
-                Car("id1", "br1", "md1", 1, "ds1")
-            )
-        )
-        StepVerifier.create(
+        val car = fixture.generateCar()
+        Mockito
+            .`when`(repo.findById("id1"))
+            .thenReturn(Mono.just(
+                car))
+        StepVerifier
+            .create(
         //WHEN
-            service.findById("id1")
-        )
+                service.findById("id1"))
         //THEN
-            .expectNext(CarReadDto("id1", "br1", "md1", 1, "ds1"))
+            .expectNext(CarReadDto(car))
             .verifyComplete()
     }
 
     @Test
     fun shouldThrowCarNotFoundExceptionIfThereIsNoCarWithSpecifiedId() {
         //GIVEN
-        Mockito.`when`(repo.findById("id1")).thenReturn(Mono.empty())
-        StepVerifier.create(
+        Mockito
+            .`when`(repo.findById("id1"))
+            .thenReturn(Mono.empty())
+        StepVerifier
+            .create(
         //WHEN
-            service.findById("id1")
-        )
+                service.findById("id1"))
         //THEN
             .verifyError(CarNotFoundException::class.java)
     }
@@ -126,33 +122,47 @@ class ReactiveCarServiceImplTest {
     @Test
     fun shouldCreateAndReturnReadDtoForCreatedCar() {
         //GIVEN
+        val carWithoutId = fixture.generateCarWithoutId()
+        val carWithId = fixture.copyWithNewId(carWithoutId)
+        val carCreateDto = CarCreateDto(
+            carWithoutId.brand,
+            carWithoutId.model,
+            carWithoutId.seats,
+            carWithoutId.description)
+        val carReadDto = CarReadDto(carWithId)
         Mockito
-            .`when`(repo.save(Car(brand = "br", model = "md", seats = 1, description = "ds")))
-            .thenReturn(Mono.just(Car(id = "id", brand = "br", model = "md", seats = 1, description = "ds")))
-        StepVerifier.create(
+            .`when`(repo.save(carWithoutId))
+            .thenReturn(Mono.just(carWithId))
+        StepVerifier
+            .create(
         //WHEN
-            service.create(CarCreateDto(brand = "br", model = "md", seats = 1, description = "ds"))
-        )
+                service.create(carCreateDto))
         //THEN
-            .expectNext(CarReadDto("id", "br", "md", 1, "ds"))
+            .expectNext(carReadDto)
             .verifyComplete()
     }
 
     @Test
     fun shouldUpdateAndReturnReadDtoUpdatedCar() {
         //GIVEN
+        val car = fixture.generateCar()
+        val carWithNewDescription = fixture.copyWithNewDescription(car)
+        val carUpdateDto = CarUpdateDto(id = car.id!!, description = carWithNewDescription.description)
         Mockito
-            .`when`(repo.findById("id"))
-            .thenReturn(Mono.just(Car(id = "id", brand = "br1", model = "md1", seats = 1, description = "ds1")))
+            .`when`(repo.findById(car.id!!))
+            .thenReturn(Mono.just(
+                car))
         Mockito
-            .`when`(repo.save(Car(id = "id", brand = "br1", model = "md1", seats = 1, description = "ds2")))
-            .thenReturn(Mono.just(Car(id = "id", brand = "br1", model = "md1", seats = 1, description = "ds2")))
-        StepVerifier.create(
+            .`when`(repo.save(
+                carWithNewDescription))
+            .thenReturn(Mono.just(
+                carWithNewDescription))
+        StepVerifier
+            .create(
         //WHEN
-            service.update(CarUpdateDto(id = "id", description = "ds2"))
-        )
+                service.update(carUpdateDto))
         //THEN
-            .expectNext(CarReadDto("id", "br1", "md1", 1, "ds2"))
+            .expectNext(CarReadDto(carWithNewDescription))
             .verifyComplete()
     }
 
@@ -162,10 +172,10 @@ class ReactiveCarServiceImplTest {
         Mockito
             .`when`(repo.findById("idDoesNotExists"))
             .thenReturn(Mono.empty())
-        StepVerifier.create(
+        StepVerifier
+            .create(
         //WHEN
-            service.update(CarUpdateDto(id = "idDoesNotExists", description = "ds2"))
-        )
+                service.update(CarUpdateDto(id = "idDoesNotExists", description = "ds2")))
         //THEN
             .expectError(CarNotFoundException::class.java)
             .verify()
@@ -177,13 +187,15 @@ class ReactiveCarServiceImplTest {
         Mockito
             .`when`(repo.deleteAll())
             .thenReturn(Mono.empty())
-        StepVerifier.create(
+        StepVerifier
+            .create(
         //WHEN
-            service.deleteAll()
-        )
+            service.deleteAll())
         //THEN
             .verifyComplete()
-        Mockito.verify(repo).deleteAll()
+        Mockito
+            .verify(repo)
+            .deleteAll()
     }
 
 }

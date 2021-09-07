@@ -2,7 +2,6 @@ package com.ajax.springcourse.car.repository.reactive
 
 import com.ajax.springcourse.car.model.Car
 import com.ajax.springcourse.car.repository.RedisCarRepository
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.data.redis.core.ReactiveHashOperations
 import org.springframework.data.redis.core.ReactiveRedisTemplate
@@ -15,7 +14,7 @@ import javax.annotation.PostConstruct
 
 @Component
 @Profile("redis_reactive")
-class RedisReactiveCarRepository (
+class RedisReactiveCarRepository(
     val template: ReactiveRedisTemplate<String, String>
 ) : ReactiveCarRepository {
 
@@ -38,33 +37,33 @@ class RedisReactiveCarRepository (
 
     override fun findByModel(model: String): Flux<Car> =
         findHashIdsByModel(model)
-        .map(hashOperations::entries)
-        .flatMap(this::entryFluxToCarMono)
+            .map(hashOperations::entries)
+            .flatMap(this::entryFluxToCarMono)
 
     override fun findById(id: String): Mono<Car> =
         hashOperations
-        .entries(id.getCarHashKey())
-        .`as`(this::entryFluxToCarMono)
-        .filter{it!=Car()}
+            .entries(id.getCarHashKey())
+            .`as`(this::entryFluxToCarMono)
+            .filter { it != Car() }
 
 
     override fun save(car: Car): Mono<Car> =
         Mono
-        .just(car)
-        .flatMap(this::removeModelIndexIfModelChanged)
-        .flatMap(this::createIdIfNotExists)
-        .flatMap(this::createModelIndexIfNotExists)
-        .flatMap(this::saveAsHash)
+            .just(car)
+            .flatMap(this::removeModelIndexIfModelChanged)
+            .flatMap(this::createIdIfNotExists)
+            .flatMap(this::createModelIndexIfNotExists)
+            .flatMap(this::saveAsHash)
 
     override fun findAll(): Flux<Car> =
         getAllHashKeys()
-        .map(hashOperations::entries)
-        .flatMap(this::entryFluxToCarMono)
+            .map(hashOperations::entries)
+            .flatMap(this::entryFluxToCarMono)
 
     override fun deleteAll(): Mono<Unit> =
         deleteAllCarHashes()
-        .then(deleteAllCarIndexes())
-        .then(Mono.just(Unit))
+            .then(deleteAllCarIndexes())
+            .then(Mono.just(Unit))
 
     private fun deleteAllCarHashes() = template.delete(getAllHashKeys())
 
@@ -72,35 +71,35 @@ class RedisReactiveCarRepository (
 
     private fun removeModelIndexIfModelChanged(car: Car): Mono<Car> =
         Mono
-        .just(car)
-        .filter {it.id!=null}
-        .flatMap(this::findOldCar)
-        .filter { oldCar -> oldCar.model != car.model }
-        .flatMap(this::deleteModelIndex)
-        .then(Mono.just(car))
+            .just(car)
+            .filter { it.id != null }
+            .flatMap(this::findOldCar)
+            .filter { oldCar -> oldCar.model != car.model }
+            .flatMap(this::deleteModelIndex)
+            .then(Mono.just(car))
 
     private fun findOldCar(car: Car): Mono<Car> =
         hashOperations
-        .entries(car.id!!.getCarHashKey())
-        .reduce(Car(), this::accumulateIntoCar)
+            .entries(car.id!!.getCarHashKey())
+            .reduce(Car(), this::accumulateIntoCar)
 
     private fun saveAsHash(car: Car): Mono<Car> =
         hashOperations
-        .putAll(
-            car.id!!.getCarHashKey(),
-            carToEntries(car)
-        )
-        .then(Mono.just(car))
+            .putAll(
+                car.id!!.getCarHashKey(),
+                carToEntries(car)
+            )
+            .then(Mono.just(car))
 
 
     private fun createIdIfNotExists(car: Car): Mono<Car> =
         Mono
-        .just(car)
-        .filter{it.id==null}
-        .map {
-            car.id = UUID.randomUUID().toString()
-            car
-        }.defaultIfEmpty(car)
+            .just(car)
+            .filter { it.id == null }
+            .map {
+                car.id = UUID.randomUUID().toString()
+                car
+            }.defaultIfEmpty(car)
 
 
     private fun carToEntries(car: Car): MutableMap<String, String> {
@@ -115,30 +114,32 @@ class RedisReactiveCarRepository (
 
     private fun createModelIndexIfNotExists(car: Car): Mono<Car> =
         setOperations
-        .add(
-            car.model.getModelIndexKey(),
-            car.id!!.getCarHashKey())
-        .then(Mono.just(car))
+            .add(
+                car.model.getModelIndexKey(),
+                car.id!!.getCarHashKey()
+            )
+            .then(Mono.just(car))
 
     private fun deleteModelIndex(car: Car) =
         setOperations
-        .remove(
-            car.model.getModelIndexKey(),
-            car.id!!.getCarHashKey())
-        .then(Mono.just(car))
+            .remove(
+                car.model.getModelIndexKey(),
+                car.id!!.getCarHashKey()
+            )
+            .then(Mono.just(car))
 
     private fun getAllHashKeys(): Flux<String> =
         template
-        .keys("*".getCarHashKey())
+            .keys("*".getCarHashKey())
 
     private fun getAllModelIndexes(): Flux<String> =
         template
-        .keys("*".getModelIndexKey())
+            .keys("*".getModelIndexKey())
 
     private fun findHashIdsByModel(model: String): Flux<String> =
         setOperations
-        .members(model.getModelIndexKey())
-        .map (String::getCarHashKey)
+            .members(model.getModelIndexKey())
+            .map { it.getCarHashKey() }
 
     private fun accumulateIntoCar(car: Car, entry: Map.Entry<String, String>): Car {
         when (entry.key) {
@@ -153,9 +154,9 @@ class RedisReactiveCarRepository (
 
     private fun entryFluxToCarMono(entries: Flux<Map.Entry<String, String>>): Mono<Car> =
         entries
-        .reduceWith(::Car, this::accumulateIntoCar)
+            .reduceWith(::Car, this::accumulateIntoCar)
+
+    private fun String.getModelIndexKey(): String = "indexes:cars:model:$this"
+
+    private fun String.getCarHashKey(): String = "cars:$this"
 }
-
-private fun String.getModelIndexKey(): String = "indexes:cars:model:$this"
-
-private fun String.getCarHashKey(): String = "cars:$this"

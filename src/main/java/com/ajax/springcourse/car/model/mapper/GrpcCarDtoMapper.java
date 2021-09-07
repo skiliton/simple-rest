@@ -5,9 +5,6 @@ import com.ajax.springcourse.car.model.dto.CarReadDto;
 import com.ajax.springcourse.car.model.dto.CarUpdateDto;
 import com.ajax.springcourse.grpc.Car;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 public class GrpcCarDtoMapper {
     public static Car.CarReadDto mapToGrpcCarReadDto(CarReadDto dto) {
         return Car.CarReadDto.newBuilder()

@@ -10,6 +10,7 @@ import com.ajax.springcourse.car.service.CarService;
 import com.ajax.springcourse.grpc.Car;
 import com.ajax.springcourse.grpc.CarServiceGrpc;
 import com.google.protobuf.Empty;
+import com.google.protobuf.StringValue;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,7 +57,7 @@ public class GrpcCarController extends CarServiceGrpc.CarServiceImplBase {
     }
 
     @Override
-    public void findByModel(Car.StringParam model, StreamObserver<Car.CarReadDto> responseObserver) {
+    public void findByModel(StringValue model, StreamObserver<Car.CarReadDto> responseObserver) {
         carService.findByModel(model.getValue()).stream()
                 .map(GrpcCarDtoMapper::mapToGrpcCarReadDto)
                 .forEach(responseObserver::onNext);
@@ -73,7 +74,7 @@ public class GrpcCarController extends CarServiceGrpc.CarServiceImplBase {
     }
 
     @Override
-    public void findById(Car.StringParam id, StreamObserver<Car.CarReadDto> responseObserver) {
+    public void findById(StringValue id, StreamObserver<Car.CarReadDto> responseObserver) {
         CarReadDto carReadDto;
         try {
             carReadDto = carService.findById(id.getValue());
